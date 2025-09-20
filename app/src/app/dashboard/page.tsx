@@ -17,11 +17,33 @@ export default function DashboardPage() {
   const { userNFTs, loading: nftsLoading, error, refreshNFTs, isEmpty, hasContract, currentNetwork } = useUserNFTs()
   const { userActivity, loading: historyLoading, refreshActivity, isHardhatNetwork } = useMetaMaskHistory()
 
-  // Calculate stats from user NFTs and MetaMask history
+  // Calculate enhanced stats from user NFTs and MetaMask history
   const totalNFTs = userNFTs.length
   const totalEarnings = userNFTs.reduce((sum, nft) => sum + parseFloat(nft.totalEarnings || '0'), 0)
   const totalViews = userNFTs.reduce((sum, nft) => sum + (nft.views || 0), 0)
   const totalLikes = userNFTs.reduce((sum, nft) => sum + (nft.likes || 0), 0)
+  
+  // Calculate additional metrics
+  const averageRoyalty = userNFTs.length > 0 
+    ? userNFTs.reduce((sum, nft) => sum + (nft.royaltyPercentage || 5), 0) / userNFTs.length 
+    : 0
+  
+  // Estimate portfolio value based on last sale or default value
+  const portfolioValue = userNFTs.reduce((sum, nft) => {
+    const lastSalePrice = nft.lastSale ? parseFloat(nft.lastSale.price) : 0.001
+    return sum + lastSalePrice
+  }, 0)
+  
+  const contentTypeDistribution = userNFTs.reduce((acc, nft) => {
+    acc[nft.contentType] = (acc[nft.contentType] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+  
+  const mostPopularType = Object.entries(contentTypeDistribution)
+    .sort((a, b) => b[1] - a[1])[0]?.[0] || 'story'
+  
+  const avgViewsPerNFT = totalNFTs > 0 ? Math.round(totalViews / totalNFTs) : 0
+  const avgLikesPerNFT = totalNFTs > 0 ? Math.round(totalLikes / totalNFTs) : 0
 
   const getContentTypeIcon = (type: string) => {
     switch (type) {
@@ -115,19 +137,51 @@ export default function DashboardPage() {
               </p>
             </div>
           </div>
-        ) : !isHardhatNetwork ? (
-          <div className="max-w-2xl mx-auto">
-            <AddHardhatNetworkButton />
-          </div>
         ) : (
           <>
+            {/* Network Warning Banner (only if not on optimal network) */}
+            {isConnected && (!hasContract || !isHardhatNetwork) && (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                <div className="flex items-center">
+                  <AlertCircle className="h-5 w-5 text-orange-600 mr-2" />
+                  <div className="flex-1">
+                    <h3 className="text-orange-800 font-semibold">Network Notice</h3>
+                    <p className="text-orange-700">
+                      You're connected to {currentNetwork}. For full functionality, consider switching to a network with deployed contracts.
+                    </p>
+                  </div>
+                  <div className="ml-4">
+                    <AddHardhatNetworkButton />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Earnings Highlight Banner */}
+            {totalEarnings > 0 && (
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg p-6 mb-8 text-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">🎉 Congratulations!</h2>
+                    <p className="text-green-100 mt-1">You've earned {totalEarnings.toFixed(6)} ETH from your literary NFTs</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold">{totalEarnings.toFixed(4)} ETH</div>
+                    <p className="text-green-100">Total Earnings</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Enhanced Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {/* Total NFTs */}
               <div className="bg-white rounded-lg shadow-sm border p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Total NFTs</p>
                     <div className="text-2xl font-bold text-gray-900">{totalNFTs}</div>
+                    <p className="text-xs text-gray-500 mt-1">Literary works minted</p>
                   </div>
                   <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
                     <BookOpen className="h-6 w-6 text-blue-600" />
@@ -135,52 +189,83 @@ export default function DashboardPage() {
                 </div>
               </div>
 
+              {/* Total Earnings */}
               <div className="bg-white rounded-lg shadow-sm border p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Minted</p>
-                    <div className="text-2xl font-bold text-gray-900">{userActivity.totalMinted}</div>
+                    <p className="text-sm font-medium text-gray-600">Total Earnings</p>
+                    <div className="text-2xl font-bold text-green-600">{totalEarnings.toFixed(4)} ETH</div>
+                    <p className="text-xs text-gray-500 mt-1">From royalties & sales</p>
                   </div>
                   <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Plus className="h-6 w-6 text-green-600" />
+                    <DollarSign className="h-6 w-6 text-green-600" />
                   </div>
                 </div>
               </div>
 
+              {/* Portfolio Value */}
               <div className="bg-white rounded-lg shadow-sm border p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Transactions</p>
-                    <div className="text-2xl font-bold text-gray-900">{userActivity.totalTransactions}</div>
+                    <p className="text-sm font-medium text-gray-600">Portfolio Value</p>
+                    <div className="text-2xl font-bold text-purple-600">{portfolioValue.toFixed(4)} ETH</div>
+                    <p className="text-xs text-gray-500 mt-1">Estimated total value</p>
                   </div>
                   <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Activity className="h-6 w-6 text-purple-600" />
+                    <TrendingUp className="h-6 w-6 text-purple-600" />
                   </div>
                 </div>
               </div>
 
+              {/* Total Engagement */}
               <div className="bg-white rounded-lg shadow-sm border p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Gas Spent</p>
-                    <div className="text-2xl font-bold text-gray-900">{parseFloat(userActivity.totalGasSpent).toFixed(4)}</div>
-                    <div className="text-xs text-gray-500">ETH</div>
-                  </div>
-                  <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-red-600" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Likes</p>
-                    <div className="text-2xl font-bold text-gray-900">{totalLikes}</div>
+                    <p className="text-sm font-medium text-gray-600">Total Engagement</p>
+                    <div className="text-2xl font-bold text-pink-600">{totalViews + totalLikes}</div>
+                    <p className="text-xs text-gray-500 mt-1">{totalViews} views, {totalLikes} likes</p>
                   </div>
                   <div className="h-12 w-12 bg-pink-100 rounded-lg flex items-center justify-center">
                     <Heart className="h-6 w-6 text-pink-600" />
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Secondary Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-blue-700">{userActivity.totalMinted}</div>
+                  <p className="text-sm text-blue-600">Minted</p>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 p-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-700">{averageRoyalty.toFixed(1)}%</div>
+                  <p className="text-sm text-green-600">Avg Royalty</p>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 p-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-orange-700">{avgViewsPerNFT}</div>
+                  <p className="text-sm text-orange-600">Avg Views</p>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200 p-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-purple-700">{mostPopularType}</div>
+                  <p className="text-sm text-purple-600">Top Genre</p>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-lg border border-gray-200 p-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-gray-700">{parseFloat(userActivity.totalGasSpent).toFixed(3)}</div>
+                  <p className="text-sm text-gray-600">Gas Spent</p>
                 </div>
               </div>
             </div>
@@ -404,52 +489,210 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                {/* Analytics Tab */}
+                {/* Enhanced Analytics Tab */}
                 {activeTab === 'analytics' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-gray-50 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Activity Summary</h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Total Minted:</span>
-                          <span className="font-semibold">{userActivity.totalMinted}</span>
+                  <div className="space-y-8">
+                    {/* Financial Overview */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold text-green-800">💰 Financial Overview</h3>
+                          <DollarSign className="h-6 w-6 text-green-600" />
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Total Received:</span>
-                          <span className="font-semibold">{userActivity.totalReceived}</span>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-green-700">Total Earnings:</span>
+                            <span className="font-bold text-green-800">{totalEarnings.toFixed(6)} ETH</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-green-700">Portfolio Value:</span>
+                            <span className="font-bold text-green-800">{portfolioValue.toFixed(6)} ETH</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-green-700">Avg Royalty Rate:</span>
+                            <span className="font-bold text-green-800">{averageRoyalty.toFixed(1)}%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-green-700">Earnings per NFT:</span>
+                            <span className="font-bold text-green-800">
+                              {totalNFTs > 0 ? (totalEarnings / totalNFTs).toFixed(6) : '0'} ETH
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Total Sent:</span>
-                          <span className="font-semibold">{userActivity.totalSent}</span>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold text-blue-800">📊 Content Analytics</h3>
+                          <BookOpen className="h-6 w-6 text-blue-600" />
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Total Transactions:</span>
-                          <span className="font-semibold">{userActivity.totalTransactions}</span>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-blue-700">Total Views:</span>
+                            <span className="font-bold text-blue-800">{totalViews.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-blue-700">Total Likes:</span>
+                            <span className="font-bold text-blue-800">{totalLikes.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-blue-700">Avg Views per NFT:</span>
+                            <span className="font-bold text-blue-800">{avgViewsPerNFT}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-blue-700">Engagement Rate:</span>
+                            <span className="font-bold text-blue-800">
+                              {totalViews > 0 ? ((totalLikes / totalViews) * 100).toFixed(1) : '0'}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-200">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold text-purple-800">⛽ Network Stats</h3>
+                          <Activity className="h-6 w-6 text-purple-600" />
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-purple-700">Current Network:</span>
+                            <span className="font-bold text-purple-800">{currentNetwork}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-purple-700">Total Transactions:</span>
+                            <span className="font-bold text-purple-800">{userActivity.totalTransactions}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-purple-700">Gas Spent:</span>
+                            <span className="font-bold text-purple-800">{parseFloat(userActivity.totalGasSpent).toFixed(6)} ETH</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-purple-700">Avg Gas per Tx:</span>
+                            <span className="font-bold text-purple-800">
+                              {userActivity.totalTransactions > 0 
+                                ? (parseFloat(userActivity.totalGasSpent) / userActivity.totalTransactions).toFixed(6)
+                                : '0'} ETH
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="bg-gray-50 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Network Usage</h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Current Network:</span>
-                          <span className="font-semibold">{currentNetwork}</span>
+
+                    {/* Content Distribution */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-white rounded-lg p-6 border">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">📚 Content Type Distribution</h3>
+                        <div className="space-y-4">
+                          {Object.entries(contentTypeDistribution).map(([type, count]) => {
+                            const percentage = totalNFTs > 0 ? (count / totalNFTs) * 100 : 0
+                            const colorMap = {
+                              story: 'bg-blue-500',
+                              poem: 'bg-purple-500',
+                              comic: 'bg-green-500'
+                            }
+                            return (
+                              <div key={type} className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                  <div className="flex items-center space-x-2">
+                                    {getContentTypeIcon(type)}
+                                    <span className="capitalize font-medium">{type}s</span>
+                                  </div>
+                                  <span className="text-sm text-gray-600">{count} ({percentage.toFixed(1)}%)</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                  <div 
+                                    className={`h-2 rounded-full ${colorMap[type as keyof typeof colorMap] || 'bg-gray-500'}`}
+                                    style={{ width: `${percentage}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                            )
+                          })}
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Total Gas Spent:</span>
-                          <span className="font-semibold">{parseFloat(userActivity.totalGasSpent).toFixed(6)} ETH</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Avg Gas per Tx:</span>
-                          <span className="font-semibold">
-                            {userActivity.totalTransactions > 0 
-                              ? (parseFloat(userActivity.totalGasSpent) / userActivity.totalTransactions).toFixed(6)
-                              : '0'} ETH
-                          </span>
+                      </div>
+
+                      <div className="bg-white rounded-lg p-6 border">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">📈 Performance Insights</h3>
+                        <div className="space-y-4">
+                          <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <TrendingUp className="h-5 w-5 text-yellow-600" />
+                              <span className="font-semibold text-yellow-800">Best Performing Genre</span>
+                            </div>
+                            <p className="text-yellow-700 capitalize">{mostPopularType} ({contentTypeDistribution[mostPopularType] || 0} NFTs)</p>
+                          </div>
+                          
+                          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <Eye className="h-5 w-5 text-blue-600" />
+                              <span className="font-semibold text-blue-800">Average Engagement</span>
+                            </div>
+                            <p className="text-blue-700">{avgViewsPerNFT} views & {avgLikesPerNFT} likes per NFT</p>
+                          </div>
+
+                          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <DollarSign className="h-5 w-5 text-green-600" />
+                              <span className="font-semibold text-green-800">Revenue Potential</span>
+                            </div>
+                            <p className="text-green-700">
+                              {averageRoyalty.toFixed(1)}% avg royalty rate
+                              {totalEarnings > 0 && ` • ${((totalEarnings / portfolioValue) * 100).toFixed(1)}% ROI`}
+                            </p>
+                          </div>
+
+                          <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <Activity className="h-5 w-5 text-purple-600" />
+                              <span className="font-semibold text-purple-800">Activity Level</span>
+                            </div>
+                            <p className="text-purple-700">
+                              {userActivity.totalMinted} minted • {userActivity.totalTransactions} transactions
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
+
+                    {/* Recent Performance */}
+                    {userNFTs.length > 0 && (
+                      <div className="bg-white rounded-lg p-6 border">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">🎯 Top Performing NFTs</h3>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b">
+                                <th className="text-left py-2">Title</th>
+                                <th className="text-left py-2">Type</th>
+                                <th className="text-left py-2">Views</th>
+                                <th className="text-left py-2">Likes</th>
+                                <th className="text-left py-2">Earnings</th>
+                                <th className="text-left py-2">Royalty</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {userNFTs
+                                .sort((a, b) => (b.views + b.likes) - (a.views + a.likes))
+                                .slice(0, 5)
+                                .map((nft) => (
+                                <tr key={nft.id} className="border-b hover:bg-gray-50">
+                                  <td className="py-3 font-medium">{nft.title}</td>
+                                  <td className="py-3">
+                                    <span className={`px-2 py-1 rounded-full text-xs ${getContentTypeColor(nft.contentType)}`}>
+                                      {nft.contentType}
+                                    </span>
+                                  </td>
+                                  <td className="py-3">{nft.views}</td>
+                                  <td className="py-3">{nft.likes}</td>
+                                  <td className="py-3 text-green-600 font-semibold">{nft.totalEarnings} ETH</td>
+                                  <td className="py-3">{nft.royaltyPercentage}%</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
