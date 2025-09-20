@@ -72,7 +72,16 @@ Meta-Tales/
 - **MetaMask** browser extension
 - **Git** for version control
 
-### 🚀 **Installation & Setup**
+### 🚀 **Quick Setup (Automated)**
+
+```bash
+# One-command setup
+git clone https://github.com/Anubhavick/Meta-Tales.git
+cd Meta-Tales
+./setup.sh
+```
+
+### 🛠️ **Manual Setup**
 
 1. **Clone the repository**
    ```bash
@@ -108,6 +117,52 @@ Meta-Tales/
      - **Mint Page**: `/mint`
      - **Gallery**: `/gallery` 
      - **Dashboard**: `/dashboard`
+
+### 🔗 **Running with Smart Contract Integration**
+
+To run the complete project with blockchain functionality:
+
+**Terminal 1: Start Local Blockchain**
+```bash
+cd contract
+npx hardhat node
+# This starts a local blockchain at http://127.0.0.1:8545
+# Note the provided test accounts and private keys
+```
+
+**Terminal 2: Deploy Contract**
+```bash
+cd contract
+npx hardhat run scripts/deploy.js --network localhost
+# This deploys MetaTalesNFT contract to local network
+# Copy the contract address for frontend integration
+```
+
+**Terminal 3: Start Frontend**
+```bash
+cd app
+npm run dev
+# Frontend runs at http://localhost:3000
+```
+
+**Configure MetaMask:**
+1. **Add Local Network**:
+   - Network Name: `Localhost 8545`
+   - RPC URL: `http://127.0.0.1:8545`
+   - Chain ID: `31337`
+   - Currency Symbol: `ETH`
+
+2. **Import Test Account**:
+   - Copy a private key from Hardhat node output
+   - Import into MetaMask for testing
+   - You'll have 10,000 ETH for testing
+
+**Environment Variables (Optional):**
+```bash
+cd contract
+cp .env.example .env
+# Add your own private key for testnet deployment
+```
 
 ### 🧪 **Testing**
 
