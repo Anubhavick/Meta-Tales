@@ -45,7 +45,7 @@ async function main() {
   
   const [defaultRecipient, defaultFraction] = await metaTalesNFT.getDefaultRoyalty();
   console.log("- Default Royalty Recipient:", defaultRecipient);
-  console.log("- Default Royalty Percentage:", defaultFraction / 100, "%");
+  console.log("- Default Royalty Percentage:", Number(defaultFraction) / 100, "%");
 
   console.log("\n🔗 Useful commands:");
   console.log(`npx hardhat verify --network ${network.name} ${await metaTalesNFT.getAddress()} "${name}" "${symbol}" "${defaultRoyaltyRecipient}" ${defaultRoyaltyFraction} "${owner}"`);

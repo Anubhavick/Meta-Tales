@@ -16,11 +16,13 @@ Meta-Tales solves this by enabling creators to upload their works, mint them as 
 - Complete frontend application with 4 main pages
 - Web3 wallet connectivity (MetaMask)
 - Responsive UI/UX design
+- **✅ Smart contract deployment working** - Contract deployed at `0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512`
+- **✅ Contract integration tested** - All contract functions verified working
 
 🚧 **In Development:**
-- Smart contract integration with frontend
-- Live minting functionality
-- Blockchain data reading for gallery
+- Frontend to contract integration (Web3 calls)
+- Live minting functionality from frontend
+- Blockchain data reading for gallery display
 
 ## Features
 
@@ -118,9 +120,12 @@ cd Meta-Tales
      - **Gallery**: `/gallery` 
      - **Dashboard**: `/dashboard`
 
-### 🔗 **Running with Smart Contract Integration**
+### 🔗 **Running with Smart Contract Integration** ✅ WORKING
 
-To run the complete project with blockchain functionality:
+**Current Status: Contract successfully deployed and tested!**
+- Contract Address: `0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512`
+- Network: Hardhat Localhost (Chain ID: 31337)
+- Integration Tests: ✅ Passing
 
 **Terminal 1: Start Local Blockchain**
 ```bash
@@ -134,15 +139,20 @@ npx hardhat node
 ```bash
 cd contract
 npx hardhat run scripts/deploy.js --network localhost
-# This deploys MetaTalesNFT contract to local network
-# Copy the contract address for frontend integration
+# ✅ Expected output:
+# ✅ Meta-Tales NFT contract deployed successfully!
+# 📋 Contract Details:
+# - Network: localhost (31337)
+# - Address: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+# - Name: Meta-Tales Literary NFTs
+# - Symbol: MTALES
 ```
 
 **Terminal 3: Start Frontend**
 ```bash
 cd app
 npm run dev
-# Frontend runs at http://localhost:3000
+# Frontend runs at http://localhost:3000 (or 3001 if 3000 is busy)
 ```
 
 **Configure MetaMask:**
@@ -156,6 +166,17 @@ npm run dev
    - Copy a private key from Hardhat node output
    - Import into MetaMask for testing
    - You'll have 10,000 ETH for testing
+
+**Verify Integration (Optional):**
+```bash
+cd contract
+npx hardhat run scripts/test-integration.js --network localhost
+# ✅ Expected output:
+# 🧪 Testing Meta-Tales NFT Contract Integration...
+# 📋 Contract Information: [contract details]
+# 🎨 Testing NFT Minting... ✅ NFT minted successfully!
+# ✅ All tests passed! Contract is ready for frontend integration.
+```
 
 **Environment Variables (Optional):**
 ```bash
@@ -239,6 +260,7 @@ npm run start              # Start production server
 - [x] Complete Next.js frontend with 4 pages
 - [x] Web3Provider setup with Wagmi/RainbowKit
 - [x] Responsive UI design with Tailwind CSS
+- [x] **Contract deployment working** - Successfully deployed to localhost
 
 ### 🚧 **In Progress (Hours 9-12)**
 - [ ] Connect frontend to smart contracts

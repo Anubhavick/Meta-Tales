@@ -1,7 +1,7 @@
 'use client'
 
 import { Navigation } from '@/components/Navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FileText, ImageIcon, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 import { useMintNFT } from '../../hooks/useMintNFT'
 import { useAccount } from 'wagmi'
@@ -19,7 +19,7 @@ interface MintFormData {
 
 export default function MintPage() {
   const { address, isConnected } = useAccount()
-  const { mintNFT, isLoading, isSupportedChain, currentChain } = useMintNFT()
+  const { mintNFT, isLoading, isSuccess, hash, error, isSupportedChain, currentChain } = useMintNFT()
   
   const [formData, setFormData] = useState<MintFormData>({
     title: '',
@@ -56,6 +56,7 @@ export default function MintPage() {
       formData.title &&
       formData.description &&
       formData.contentType &&
+      formData.content &&
       formData.coverImage
     )
   }
@@ -112,12 +113,41 @@ export default function MintPage() {
     } catch (error: any) {
       console.error('❌ Minting failed:', error)
       setUploadStatus('error')
-      setErrorMessage(error?.message || 'Unknown error occurred')
+      setErrorMessage(error.message || 'Unknown error occurred')
+    }
+  }
+      setErrorMessage(error.message || 'Failed to mint NFT')
     }
   }
 
+  // Watch for transaction success
+  useEffect(() => {
+    if (isSuccess && hash) {
+      setUploadStatus('success')
+      setTxHash(hash)
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        contentType: '',
+        content: null,
+        coverImage: null,
+        royaltyPercentage: 5
+      })
+    }
+  }, [isSuccess, hash])
+
+  // Watch for errors
+  useEffect(() => {
+    if (error) {
+      setUploadStatus('error')
+      setErrorMessage(error)
+    }
+  }, [error])
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
+    <div className="min-h-screen bg-gray-50">
       <Navigation />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
@@ -130,37 +160,23 @@ export default function MintPage() {
           </p>
         </div>
 
-        {/* Success Message */}
         {uploadStatus === 'success' && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-8">
             <div className="flex items-center">
               <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
               <div>
                 <h3 className="text-green-800 font-semibold">NFT Minted Successfully!</h3>
-                {tokenId && (
-                  <p className="text-green-700">
-                    Token ID: <span className="font-mono text-sm">#{tokenId}</span>
-                  </p>
-                )}
-                {txHash && (
-                  <p className="text-green-700">
-                    Transaction: 
-                    <a 
-                      href={`https://sepolia.etherscan.io/tx/${txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-sm ml-1 underline"
-                    >
-                      {txHash.slice(0, 10)}...{txHash.slice(-8)}
-                    </a>
-                  </p>
-                )}
+                <p className="text-green-700">
+                  Token ID: <span className="font-mono text-sm">#{tokenId}</span>
+                </p>
+                <p className="text-green-700">
+                  Transaction Hash: <span className="font-mono text-sm">{txHash}</span>
+                </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Error Message */}
         {uploadStatus === 'error' && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
             <div className="flex items-center">
@@ -175,7 +191,6 @@ export default function MintPage() {
           </div>
         )}
 
-        {/* Wallet Connection Warning */}
         {!isConnected && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
             <div className="flex items-center">
@@ -190,7 +205,6 @@ export default function MintPage() {
           </div>
         )}
 
-        {/* Network Status */}
         {isConnected && (
           <div className={`border rounded-lg p-4 mb-8 ${isSupportedChain ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'}`}>
             <div className="flex items-center">
@@ -210,9 +224,8 @@ export default function MintPage() {
           </div>
         )}
 
-        {/* Mint Form */}
-        <div className="bg-white rounded-lg shadow border p-8">
-          <form className="space-y-6">
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <form onSubmit={(e) => { e.preventDefault(); handleMint() }} className="space-y-6">
             {/* Title */}
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
@@ -224,8 +237,8 @@ export default function MintPage() {
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                placeholder="Enter the title of your literary work"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Enter the title of your work"
                 required
               />
             </div>
@@ -241,8 +254,8 @@ export default function MintPage() {
                 value={formData.description}
                 onChange={handleInputChange}
                 rows={4}
-                placeholder="Describe your literary work, its themes, and what makes it special"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Describe your literary work..."
                 required
               />
             </div>
@@ -257,7 +270,7 @@ export default function MintPage() {
                 name="contentType"
                 value={formData.contentType}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
                 required
               >
                 <option value="">Select content type</option>
@@ -267,137 +280,130 @@ export default function MintPage() {
               </select>
             </div>
 
-            {/* Cover Image */}
+            {/* Content File Upload */}
             <div>
-              <label htmlFor="coverImage" className="block text-sm font-medium text-gray-700 mb-2">
-                Cover Image *
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Literary Work File *
               </label>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                <div className="space-y-1 text-center">
-                  <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="flex text-sm text-gray-600">
-                    <label htmlFor="coverImage" className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                      <span>Upload cover image</span>
-                      <input
-                        id="coverImage"
-                        name="coverImage"
-                        type="file"
-                        accept="image/*"
-                        className="sr-only"
-                        onChange={(e) => handleFileChange(e, 'coverImage')}
-                        required
-                      />
-                    </label>
-                    <p className="pl-1">or drag and drop</p>
-                  </div>
-                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                  {formData.coverImage && (
-                    <p className="text-sm text-green-600">✓ {formData.coverImage.name}</p>
-                  )}
-                </div>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-400 transition-colors">
+                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <label htmlFor="content" className="cursor-pointer">
+                  <span className="text-indigo-600 font-medium hover:text-indigo-700">
+                    Click to upload
+                  </span>
+                  <span className="text-gray-600"> or drag and drop</span>
+                  <input
+                    type="file"
+                    id="content"
+                    className="hidden"
+                    accept=".txt,.pdf,.doc,.docx"
+                    onChange={(e) => handleFileChange(e, 'content')}
+                    required
+                  />
+                </label>
+                <p className="text-sm text-gray-500 mt-2">
+                  Supports TXT, PDF, DOC, DOCX files
+                </p>
+                {formData.content && (
+                  <p className="text-sm text-green-600 mt-2">
+                    ✓ {formData.content.name}
+                  </p>
+                )}
               </div>
             </div>
 
-            {/* Content File */}
+            {/* Cover Image Upload */}
             <div>
-              <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-                Literary Work File (Optional)
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Cover Image *
               </label>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                <div className="space-y-1 text-center">
-                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="flex text-sm text-gray-600">
-                    <label htmlFor="content" className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                      <span>Upload your work</span>
-                      <input
-                        id="content"
-                        name="content"
-                        type="file"
-                        accept=".txt,.pdf,.doc,.docx"
-                        className="sr-only"
-                        onChange={(e) => handleFileChange(e, 'content')}
-                      />
-                    </label>
-                    <p className="pl-1">or drag and drop</p>
-                  </div>
-                  <p className="text-xs text-gray-500">TXT, PDF, DOC, DOCX up to 10MB</p>
-                  {formData.content && (
-                    <p className="text-sm text-green-600">✓ {formData.content.name}</p>
-                  )}
-                </div>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-400 transition-colors">
+                <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <label htmlFor="coverImage" className="cursor-pointer">
+                  <span className="text-indigo-600 font-medium hover:text-indigo-700">
+                    Click to upload
+                  </span>
+                  <span className="text-gray-600"> or drag and drop</span>
+                  <input
+                    type="file"
+                    id="coverImage"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => handleFileChange(e, 'coverImage')}
+                    required
+                  />
+                </label>
+                <p className="text-sm text-gray-500 mt-2">
+                  PNG, JPG, GIF up to 10MB
+                </p>
+                {formData.coverImage && (
+                  <p className="text-sm text-green-600 mt-2">
+                    ✓ {formData.coverImage.name}
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Royalty Percentage */}
             <div>
               <label htmlFor="royaltyPercentage" className="block text-sm font-medium text-gray-700 mb-2">
-                Royalty Percentage
+                Royalty Percentage (%)
               </label>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-4">
                 <input
-                  type="number"
+                  type="range"
                   id="royaltyPercentage"
                   name="royaltyPercentage"
-                  value={formData.royaltyPercentage}
-                  onChange={handleInputChange}
                   min="0"
                   max="10"
                   step="0.5"
-                  className="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  value={formData.royaltyPercentage}
+                  onChange={handleInputChange}
+                  className="flex-1"
                 />
-                <span className="text-sm text-gray-600">% royalty on secondary sales</span>
+                <span className="text-lg font-semibold text-gray-900 w-12">
+                  {formData.royaltyPercentage}%
+                </span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                You'll earn this percentage from every future sale of your NFT
+              <p className="text-sm text-gray-500 mt-1">
+                You&apos;ll earn this percentage on all future sales of your NFT
               </p>
             </div>
 
-            {/* Mint Button */}
+            {/* Submit Button */}
             <div className="pt-6">
               <button
-                type="button"
-                onClick={handleMint}
-                disabled={!isConnected || isLoading || !validateForm() || uploadStatus === 'uploading'}
-                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                type="submit"
+                disabled={!validateForm() || isLoading || !isConnected}
+                className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors ${
+                  validateForm() && !isLoading && isConnected
+                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               >
-                {uploadStatus === 'uploading' || isLoading ? (
-                  <>
-                    <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5" />
-                    {uploadStatus === 'uploading' ? 'Uploading to IPFS...' : 'Minting NFT...'}
-                  </>
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    Minting NFT...
+                  </div>
+                ) : !isConnected ? (
+                  'Connect Wallet to Mint'
                 ) : (
                   'Mint NFT'
                 )}
               </button>
             </div>
           </form>
-        </div>
 
-        {/* Information Section */}
-        <div className="mt-12 bg-blue-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-blue-900 mb-4">How It Works</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">1</span>
-              </div>
-              <h4 className="font-medium text-blue-900">Upload</h4>
-              <p className="text-sm text-blue-700">Your files are stored on IPFS for decentralized access</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">2</span>
-              </div>
-              <h4 className="font-medium text-blue-900">Mint</h4>
-              <p className="text-sm text-blue-700">Your NFT is created on the blockchain with royalties</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">3</span>
-              </div>
-              <h4 className="font-medium text-blue-900">Earn</h4>
-              <p className="text-sm text-blue-700">Receive royalties from all future sales automatically</p>
-            </div>
+          {/* Minting Process Info */}
+          <div className="mt-8 bg-blue-50 rounded-lg p-4">
+            <h3 className="text-blue-800 font-semibold mb-2">What happens when you mint?</h3>
+            <ul className="text-blue-700 text-sm space-y-1">
+              <li>• Your files are uploaded to IPFS for permanent storage</li>
+              <li>• Metadata is generated and stored on-chain</li>
+              <li>• An ERC-721 NFT is minted with your specified royalty rate</li>
+              <li>• You become the verified owner of your literary work</li>
+            </ul>
           </div>
         </div>
       </div>

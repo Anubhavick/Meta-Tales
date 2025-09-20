@@ -8,8 +8,8 @@ import '@rainbow-me/rainbowkit/styles.css'
 
 const config = getDefaultConfig({
   appName: 'Meta-Tales',
-  projectId: 'YOUR_PROJECT_ID', // Get from WalletConnect Cloud
-  chains: [hardhat, sepolia],
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '9e510ffa7849970129757b973e412882',
+  chains: [sepolia, hardhat], // Sepolia first as primary network
   ssr: true, // If your dApp uses server side rendering (SSR)
 })
 

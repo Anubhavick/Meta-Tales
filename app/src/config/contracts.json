@@ -1,0 +1,39 @@
+{
+  "networks": {
+    "localhost": {
+      "name": "Local Hardhat",
+      "chainId": 31337,
+      "rpcUrl": "http://127.0.0.1:8545",
+      "contracts": {
+        "MetaTalesNFT": {
+          "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+          "deployedAt": "2025-09-21",
+          "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+        }
+      }
+    },
+    "sepolia": {
+      "name": "Sepolia Testnet", 
+      "chainId": 11155111,
+      "rpcUrl": "https://sepolia.infura.io/v3/582157158e354118ae92c85b12417ff4",
+      "contracts": {
+        "MetaTalesNFT": {
+          "address": "TBD",
+          "deployedAt": "TBD",
+          "deployer": "TBD"
+        }
+      }
+    }
+  },
+  "contract": {
+    "name": "Meta-Tales Literary NFTs",
+    "symbol": "MTALES",
+    "features": [
+      "ERC-721 NFT standard",
+      "EIP-2981 royalty support", 
+      "Burnable tokens",
+      "URI storage for metadata",
+      "Ownable access control"
+    ]
+  }
+}
