@@ -2,7 +2,7 @@
 
 import { Navigation } from '@/components/Navigation'
 import { useState } from 'react'
-import { Upload, FileText, Image, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+import { FileText, ImageIcon, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 
 type ContentType = 'story' | 'poem' | 'comic' | ''
 
@@ -230,7 +230,7 @@ export default function MintPage() {
                 Cover Image *
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-400 transition-colors">
-                <Image className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <label htmlFor="coverImage" className="cursor-pointer">
                   <span className="text-indigo-600 font-medium hover:text-indigo-700">
                     Click to upload

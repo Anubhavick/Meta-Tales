@@ -2,7 +2,7 @@
 
 import { Navigation } from '@/components/Navigation'
 import { useState, useEffect } from 'react'
-import { Search, Filter, BookOpen, Heart, ExternalLink, User, FileImage } from 'lucide-react'
+import { Search, BookOpen, Heart, ExternalLink, User, FileImage } from 'lucide-react'
 import Image from 'next/image'
 
 interface NFTItem {
@@ -214,7 +214,7 @@ export default function GalleryPage() {
             {/* Content Type Filter */}
             <select
               value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value as any)}
+              onChange={(e) => setSelectedType(e.target.value as 'all' | 'story' | 'poem' | 'comic')}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="all">All Types</option>
@@ -226,7 +226,7 @@ export default function GalleryPage() {
             {/* Sort */}
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'likes' | 'price')}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="newest">Newest</option>
