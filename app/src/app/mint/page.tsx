@@ -19,7 +19,7 @@ interface MintFormData {
 
 export default function MintPage() {
   const { address, isConnected } = useAccount()
-  const { mintNFT, isLoading, isSupportedChain, currentChain } = useMintNFT()
+  const { mintNFT, isLoading, isSupportedChain, currentChain, hasValidContract } = useMintNFT()
   
   const [formData, setFormData] = useState<MintFormData>({
     title: '',
@@ -201,8 +201,8 @@ export default function MintPage() {
                 </h3>
                 <p className={`${isSupportedChain ? 'text-green-700' : 'text-orange-700'}`}>
                   {isSupportedChain 
-                    ? `Connected to ${currentChain}. You can mint NFTs on this network.`
-                    : `Please switch to Sepolia testnet to mint NFTs. The system will prompt you automatically.`
+                    ? `Connected to ${currentChain}. ${hasValidContract ? 'You can mint NFTs on this network.' : 'Contract not deployed yet - please deploy first.'}`
+                    : `Please switch to a supported testnet to mint NFTs. Available: Hardhat, Goerli, Mumbai, Sepolia, Optimism, Arbitrum, BSC.`
                   }
                 </p>
               </div>

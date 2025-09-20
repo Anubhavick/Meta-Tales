@@ -6,7 +6,13 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy": "hardhat run scripts/deploy.js",
+    "deploy:all": "hardhat run scripts/deploy-all-networks.js",
+    "deploy:goerli": "hardhat run scripts/deploy-goerli.js --network goerli",
+    "deploy:mumbai": "hardhat run scripts/deploy-mumbai.js --network mumbai", 
     "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
+    "deploy:optimism": "hardhat run scripts/deploy.js --network optimismGoerli",
+    "deploy:arbitrum": "hardhat run scripts/deploy.js --network arbitrumGoerli",
+    "deploy:bsc": "hardhat run scripts/deploy-bsc.js --network bscTestnet",
     "verify": "hardhat verify --network sepolia",
     "ipfs:demo": "node scripts/ipfs-demo.js",
     "mint:demo": "hardhat run scripts/mint-with-ipfs.js"

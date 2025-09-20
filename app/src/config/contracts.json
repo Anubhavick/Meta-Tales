@@ -12,10 +12,84 @@
         }
       }
     },
+    "goerli": {
+      "name": "Goerli Testnet",
+      "chainId": 5,
+      "rpcUrl": "https://goerli.infura.io/v3/582157158e354118ae92c85b12417ff4",
+      "faucet": "https://goerlifaucet.com/",
+      "explorer": "https://goerli.etherscan.io",
+      "contracts": {
+        "MetaTalesNFT": {
+          "address": "TBD",
+          "deployedAt": "TBD",
+          "deployer": "TBD"
+        }
+      }
+    },
     "sepolia": {
       "name": "Sepolia Testnet", 
       "chainId": 11155111,
       "rpcUrl": "https://sepolia.infura.io/v3/582157158e354118ae92c85b12417ff4",
+      "faucet": "https://sepoliafaucet.com/",
+      "explorer": "https://sepolia.etherscan.io",
+      "contracts": {
+        "MetaTalesNFT": {
+          "address": "TBD",
+          "deployedAt": "TBD",
+          "deployer": "TBD"
+        }
+      }
+    },
+    "mumbai": {
+      "name": "Mumbai Testnet (Polygon)",
+      "chainId": 80001,
+      "rpcUrl": "https://rpc-mumbai.maticvigil.com",
+      "faucet": "https://faucet.polygon.technology/",
+      "explorer": "https://mumbai.polygonscan.com",
+      "currency": "MATIC",
+      "contracts": {
+        "MetaTalesNFT": {
+          "address": "TBD",
+          "deployedAt": "TBD",
+          "deployer": "TBD"
+        }
+      }
+    },
+    "optimismGoerli": {
+      "name": "Optimism Goerli",
+      "chainId": 420,
+      "rpcUrl": "https://goerli.optimism.io",
+      "faucet": "https://community.optimism.io/docs/useful-tools/faucets/",
+      "explorer": "https://goerli-optimism.etherscan.io",
+      "contracts": {
+        "MetaTalesNFT": {
+          "address": "TBD",
+          "deployedAt": "TBD",
+          "deployer": "TBD"
+        }
+      }
+    },
+    "arbitrumGoerli": {
+      "name": "Arbitrum Goerli",
+      "chainId": 421613,
+      "rpcUrl": "https://goerli-rollup.arbitrum.io/rpc",
+      "faucet": "https://bridge.arbitrum.io/",
+      "explorer": "https://goerli.arbiscan.io",
+      "contracts": {
+        "MetaTalesNFT": {
+          "address": "TBD",
+          "deployedAt": "TBD",
+          "deployer": "TBD"
+        }
+      }
+    },
+    "bscTestnet": {
+      "name": "BSC Testnet",
+      "chainId": 97,
+      "rpcUrl": "https://data-seed-prebsc-1-s1.binance.org:8545",
+      "faucet": "https://testnet.binance.org/faucet-smart",
+      "explorer": "https://testnet.bscscan.com",
+      "currency": "BNB",
       "contracts": {
         "MetaTalesNFT": {
           "address": "TBD",

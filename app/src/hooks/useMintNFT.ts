@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, useSwitchChain } from 'wagmi'
-import { sepolia, hardhat } from 'wagmi/chains'
+import { sepolia, hardhat, goerli, polygonMumbai, optimismGoerli, arbitrumGoerli, bscTestnet } from 'wagmi/chains'
 import contractsConfig from '@/config/contracts.json'
 
 // Add window.ethereum type
@@ -46,28 +46,66 @@ interface MintResult {
 
 // Get contract address for current chain
 const getContractAddress = (chainId: number): string => {
-  if (chainId === sepolia.id) {
-    const address = process.env.NEXT_PUBLIC_SEPOLIA_CONTRACT_ADDRESS || ''
-    // Check if it's a valid address (not the placeholder)
-    if (!address || address === 'your_sepolia_contract_address_here' || !address.startsWith('0x')) {
+  console.log('Getting contract address for chainId:', chainId)
+  
+  switch (chainId) {
+    case hardhat.id: // 31337
+      return contractsConfig.networks.localhost.contracts.MetaTalesNFT.address
+    case sepolia.id: // 11155111
+      const sepoliaAddress = process.env.NEXT_PUBLIC_SEPOLIA_CONTRACT_ADDRESS || contractsConfig.networks.sepolia.contracts.MetaTalesNFT.address
+      return sepoliaAddress === 'TBD' ? '' : sepoliaAddress
+    case goerli.id: // 5
+      const goerliAddress = contractsConfig.networks.goerli.contracts.MetaTalesNFT.address
+      return goerliAddress === 'TBD' ? '' : goerliAddress
+    case polygonMumbai.id: // 80001
+      const mumbaiAddress = contractsConfig.networks.mumbai.contracts.MetaTalesNFT.address
+      return mumbaiAddress === 'TBD' ? '' : mumbaiAddress
+    case optimismGoerli.id: // 420
+      const optimismAddress = contractsConfig.networks.optimismGoerli.contracts.MetaTalesNFT.address
+      return optimismAddress === 'TBD' ? '' : optimismAddress
+    case arbitrumGoerli.id: // 421613
+      const arbitrumAddress = contractsConfig.networks.arbitrumGoerli.contracts.MetaTalesNFT.address
+      return arbitrumAddress === 'TBD' ? '' : arbitrumAddress
+    case bscTestnet.id: // 97
+      const bscAddress = contractsConfig.networks.bscTestnet.contracts.MetaTalesNFT.address
+      return bscAddress === 'TBD' ? '' : bscAddress
+    default:
       return ''
-    }
-    return address
-  } else if (chainId === hardhat.id) {
-    return contractsConfig.networks.localhost.contracts.MetaTalesNFT.address
   }
-  return ''
 }
 
-// Check if chain is supported and has a deployed contract
+// Check if chain is supported
 const isSupportedChain = (chainId: number): boolean => {
-  return chainId === sepolia.id || chainId === hardhat.id
+  const supportedChains: number[] = [
+    hardhat.id,      // 31337
+    sepolia.id,      // 11155111  
+    goerli.id,       // 5
+    polygonMumbai.id, // 80001
+    optimismGoerli.id, // 420
+    arbitrumGoerli.id, // 421613
+    bscTestnet.id    // 97
+  ]
+  return supportedChains.includes(chainId)
 }
 
 // Check if contract is available for current chain
 const hasValidContract = (chainId: number): boolean => {
   const address = getContractAddress(chainId)
   return !!address && address.startsWith('0x') && address.length === 42
+}
+
+// Get network name for display
+const getNetworkName = (chainId: number): string => {
+  switch (chainId) {
+    case hardhat.id: return 'Hardhat'
+    case sepolia.id: return 'Sepolia'
+    case goerli.id: return 'Goerli'
+    case polygonMumbai.id: return 'Mumbai'
+    case optimismGoerli.id: return 'Optimism Goerli'
+    case arbitrumGoerli.id: return 'Arbitrum Goerli'
+    case bscTestnet.id: return 'BSC Testnet'
+    default: return 'Unknown'
+  }
 }
 
 export function useMintNFT() {
@@ -113,16 +151,27 @@ export function useMintNFT() {
     return result.metadataUrl
   }
 
-  // Switch to Sepolia if not on supported network
+  // Switch to supported network (prioritize Hardhat for development)
   const ensureCorrectNetwork = async (): Promise<boolean> => {
     if (!isSupportedChain(chainId)) {
       try {
-        console.log(`🔄 Switching to Sepolia testnet...`)
-        await switchChain({ chainId: sepolia.id })
+        console.log(`🔄 Switching to Hardhat localhost...`)
+        await switchChain({ chainId: hardhat.id })
         return true
       } catch (error) {
-        console.error('❌ Failed to switch network:', error)
-        throw new Error('Please switch to Sepolia testnet in your wallet')
+        console.log(`❌ Failed to switch to Hardhat, trying other networks...`)
+        // Try other networks in priority order
+        const fallbackChains = [goerli.id, polygonMumbai.id, sepolia.id]
+        for (const targetChainId of fallbackChains) {
+          try {
+            await switchChain({ chainId: targetChainId })
+            return true
+          } catch (chainError) {
+            console.log(`❌ Failed to switch to chain ${targetChainId}`)
+          }
+        }
+        console.error('❌ Failed to switch to any supported network')
+        return false
       }
     }
     return true
@@ -145,11 +194,8 @@ export function useMintNFT() {
 
       // 3. Check if contract is available
       if (!hasValidContract(chainId)) {
-        if (chainId === sepolia.id) {
-          throw new Error('Contract not yet deployed to Sepolia. Please deploy the contract first.')
-        } else {
-          throw new Error(`Contract not available on this network`)
-        }
+        const networkName = getNetworkName(chainId)
+        throw new Error(`Contract not yet deployed to ${networkName}. Please deploy the contract first or switch to a network with a deployed contract.`)
       }
 
       // 4. Get contract address for current chain
@@ -205,6 +251,6 @@ export function useMintNFT() {
     error: error?.message,
     isSupportedChain: isSupportedChain(chainId),
     hasValidContract: hasValidContract(chainId),
-    currentChain: chainId === sepolia.id ? 'Sepolia' : chainId === hardhat.id ? 'Hardhat' : 'Unknown'
+    currentChain: getNetworkName(chainId)
   }
 }

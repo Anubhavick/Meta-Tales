@@ -40,17 +40,17 @@ export interface UserNFT {
   }
 }
 
-// Get contract address for current chain
+// Get contract address for current chain (prioritize Hardhat for development)
 const getContractAddress = (chainId: number): string => {
-  if (chainId === sepolia.id) {
+  if (chainId === hardhat.id) {
+    return contractsConfig.networks.localhost.contracts.MetaTalesNFT.address
+  } else if (chainId === sepolia.id) {
     const address = process.env.NEXT_PUBLIC_SEPOLIA_CONTRACT_ADDRESS || ''
     // Check if it's a valid address (not the placeholder)
     if (!address || address === 'your_sepolia_contract_address_here' || !address.startsWith('0x')) {
       return ''
     }
     return address
-  } else if (chainId === hardhat.id) {
-    return contractsConfig.networks.localhost.contracts.MetaTalesNFT.address
   }
   return ''
 }
@@ -61,12 +61,12 @@ const hasValidContract = (chainId: number): boolean => {
   return !!address && address.startsWith('0x') && address.length === 42
 }
 
-// Get RPC URL for current chain
+// Get RPC URL for current chain (prioritize Hardhat)
 const getRpcUrl = (chainId: number): string => {
-  if (chainId === sepolia.id) {
-    return `https://sepolia.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}`
-  } else if (chainId === hardhat.id) {
+  if (chainId === hardhat.id) {
     return 'http://127.0.0.1:8545'
+  } else if (chainId === sepolia.id) {
+    return `https://sepolia.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}`
   }
   return ''
 }
@@ -278,6 +278,6 @@ export function useUserNFTs() {
     refreshNFTs,
     isEmpty: userNFTs.length === 0 && !loading,
     hasContract: hasValidContract(chainId),
-    currentNetwork: chainId === sepolia.id ? 'Sepolia' : chainId === hardhat.id ? 'Hardhat' : 'Unknown'
+    currentNetwork: chainId === hardhat.id ? 'Hardhat' : chainId === sepolia.id ? 'Sepolia' : 'Unknown'
   }
 }
