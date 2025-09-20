@@ -3,7 +3,7 @@
 **A blockchain-powered NFT marketplace for stories, poems, and comics.**
 
 ## Overview
-
+.
 Writers, poets, and comic artists face ongoing challenges in protecting their creative works, establishing true digital ownership, and earning fair compensation. Existing platforms like Wattpad, Webtoon, and Medium provide visibility but lack mechanisms for secure ownership, transparent monetization, and controlled distribution.
 
 Meta-Tales solves this by enabling creators to upload their works, mint them as NFTs on IPFS, and prove ownership with royalties via an ERC-721 smart contract. Our Next.js frontend integrates MetaMask + Wagmi for seamless minting and viewing of NFTs, providing secure ownership, provenance, and monetization for digital literary works in Web3.
