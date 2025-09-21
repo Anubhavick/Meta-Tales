@@ -72,7 +72,7 @@ async function main() {
       
       console.log("   Transaction submitted:", tx.hash);
       const receipt = await tx.wait();
-      console.log("   ✅ Minted successfully in block:", receipt.blockNumber);
+      console.log("    Minted successfully in block:", receipt.blockNumber);
       
       // Get the token ID from the Transfer event
       const transferEvent = receipt.logs.find(log => 
@@ -85,7 +85,7 @@ async function main() {
       }
       
     } catch (error) {
-      console.error(`   ❌ Error minting "${metadata.name}":`, error.message);
+      console.error(`    Error minting "${metadata.name}":`, error.message);
     }
     
     // Small delay between mints

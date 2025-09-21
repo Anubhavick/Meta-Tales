@@ -2,9 +2,16 @@
 
 import { useState } from 'react'
 import { useChainId, useSwitchChain } from 'wagmi'
-import { hardhat, goerli, sepolia, polygonMumbai, optimismGoerli, arbitrumGoerli, bscTestnet } from 'wagmi/chains'
+import { hardhat, sepolia, polygonMumbai, bscTestnet } from 'wagmi/chains'
 import { Wifi, WifiOff, ExternalLink, Zap, Clock, DollarSign, RefreshCw } from 'lucide-react'
 import contractsConfig from '@/config/contracts.json'
+
+// Define Polygon Amoy testnet (matches other components)
+const polygonAmoy = {
+  id: 80002,
+  name: 'Polygon Amoy',
+  nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 },
+}
 
 interface NetworkInfo {
   chain: any
@@ -32,70 +39,44 @@ const NETWORK_INFO: Record<number, NetworkInfo> = {
     cons: ['Local only', 'Resets when stopped'],
     difficulty: 'Easy'
   },
-  [goerli.id]: {
-    chain: goerli,
-    name: 'Goerli Testnet',
-    description: 'Most stable Ethereum testnet with reliable faucets',
-    faucet: 'https://goerlifaucet.com/',
-    explorer: 'https://goerli.etherscan.io',
+  [sepolia.id]: {
+    chain: sepolia,
+    name: 'Sepolia Testnet',
+    description: 'Reliable Ethereum testnet with active development support',
+    faucet: 'https://sepoliafaucet.com/',
+    explorer: 'https://sepolia.etherscan.io',
     currency: 'ETH',
     gasPrice: 'Free',
     speed: 'Fast',
-    pros: ['Stable & reliable', 'Multiple faucets', 'Close to mainnet', 'Wide support'],
-    cons: ['Faucet limits', 'May have queues'],
+    pros: ['Active support', 'Reliable faucets', 'Mainnet-like', 'Wide adoption'],
+    cons: ['Faucet limits', 'Gas required for complex ops'],
     difficulty: 'Easy'
   },
   [polygonMumbai.id]: {
     chain: polygonMumbai,
-    name: 'Mumbai Testnet',
-    description: 'Polygon testnet with fast, cheap transactions',
+    name: 'Mumbai Testnet (Legacy)',
+    description: 'Polygon testnet with fast, cheap transactions (being deprecated)',
     faucet: 'https://faucet.polygon.technology/',
     explorer: 'https://mumbai.polygonscan.com',
     currency: 'MATIC',
     gasPrice: 'Very Low',
     speed: 'Very Fast',
     pros: ['Extremely fast', 'Very cheap', 'Great faucets', 'L2 experience'],
-    cons: ['Different from Ethereum', 'MATIC instead of ETH'],
+    cons: ['Different from Ethereum', 'MATIC instead of ETH', 'Being deprecated'],
     difficulty: 'Easy'
   },
-  [sepolia.id]: {
-    chain: sepolia,
-    name: 'Sepolia Testnet',
-    description: 'Newer Ethereum testnet, replacing older testnets',
-    faucet: 'https://sepoliafaucet.com/',
-    explorer: 'https://sepolia.etherscan.io',
-    currency: 'ETH',
-    gasPrice: 'Free',
-    speed: 'Medium',
-    pros: ['Official Ethereum testnet', 'Long-term support'],
-    cons: ['Limited faucets', 'Stricter requirements', 'Newer/less stable'],
-    difficulty: 'Medium'
-  },
-  [optimismGoerli.id]: {
-    chain: optimismGoerli,
-    name: 'Optimism Goerli',
-    description: 'Layer 2 Ethereum testnet with lower fees',
-    faucet: 'https://community.optimism.io/docs/useful-tools/faucets/',
-    explorer: 'https://goerli-optimism.etherscan.io',
-    currency: 'ETH',
+  [polygonAmoy.id]: {
+    chain: polygonAmoy,
+    name: 'Polygon Amoy Testnet',
+    description: 'New Polygon testnet replacing Mumbai with POL tokens',
+    faucet: 'https://faucet.polygon.technology/',
+    explorer: 'https://amoy.polygonscan.com',
+    currency: 'POL',
     gasPrice: 'Very Low',
-    speed: 'Fast',
-    pros: ['L2 scaling', 'Low fees', 'Ethereum compatibility'],
-    cons: ['More complex setup', 'Bridge required'],
-    difficulty: 'Medium'
-  },
-  [arbitrumGoerli.id]: {
-    chain: arbitrumGoerli,
-    name: 'Arbitrum Goerli',
-    description: 'Another Layer 2 Ethereum testnet option',
-    faucet: 'https://bridge.arbitrum.io/',
-    explorer: 'https://goerli.arbiscan.io',
-    currency: 'ETH',
-    gasPrice: 'Very Low',
-    speed: 'Fast',
-    pros: ['L2 scaling', 'Low fees', 'Growing ecosystem'],
-    cons: ['Bridge setup', 'Learning curve'],
-    difficulty: 'Medium'
+    speed: 'Very Fast',
+    pros: ['Latest Polygon testnet', 'Very fast', 'Very cheap', 'Modern features'],
+    cons: ['Different from Ethereum', 'POL instead of ETH', 'Newer network'],
+    difficulty: 'Easy'
   },
   [bscTestnet.id]: {
     chain: bscTestnet,
@@ -122,11 +103,9 @@ export function NetworkSelector() {
   function getNetworkKey(chainId: number): keyof typeof contractsConfig.networks | null {
     switch (chainId) {
       case hardhat.id: return 'localhost'
-      case goerli.id: return 'goerli'
       case sepolia.id: return 'sepolia'
       case polygonMumbai.id: return 'mumbai'
-      case optimismGoerli.id: return 'optimismGoerli'
-      case arbitrumGoerli.id: return 'arbitrumGoerli'
+      case polygonAmoy.id: return 'amoy'
       case bscTestnet.id: return 'bscTestnet'
       default: return null
     }
@@ -144,141 +123,173 @@ export function NetworkSelector() {
     }
   }
 
+  const getSpeedIcon = (speed: string) => {
+    switch (speed) {
+      case 'Instant': return <Zap className="h-4 w-4 text-yellow-500" />
+      case 'Very Fast': return <Zap className="h-4 w-4 text-green-500" />
+      case 'Fast': return <Clock className="h-4 w-4 text-green-500" />
+      case 'Medium': return <Clock className="h-4 w-4 text-yellow-500" />
+      default: return <Clock className="h-4 w-4 text-gray-500" />
+    }
+  }
+
+  const getPriceIcon = (gasPrice: string) => {
+    if (gasPrice === 'Free') return <DollarSign className="h-4 w-4 text-green-500" />
+    if (gasPrice.includes('Very Low')) return <DollarSign className="h-4 w-4 text-green-400" />
+    return <DollarSign className="h-4 w-4 text-yellow-500" />
+  }
+
   const handleNetworkSwitch = async (targetChainId: number) => {
+    setSelectedNetwork(targetChainId)
     try {
       await switchChain({ chainId: targetChainId })
     } catch (error) {
       console.error('Failed to switch network:', error)
     }
+    setSelectedNetwork(null)
+  }
+
+  const isContractDeployed = (networkChainId: number) => {
+    const key = getNetworkKey(networkChainId)
+    if (!key) return false
+    const address = contractsConfig.networks[key]?.contracts?.MetaTalesNFT?.address
+    return address && address !== 'TBD' && address.startsWith('0x')
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Network Selection</h2>
-        <p className="text-gray-600">Choose the best network for your testing needs</p>
-      </div>
-
-      {/* Current Network Status */}
-      {currentNetwork && (
-        <div className={`p-4 rounded-lg mb-6 ${hasContract ? 'bg-green-50 border border-green-200' : 'bg-orange-50 border border-orange-200'}`}>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center">
-              {hasContract ? <Wifi className="h-5 w-5 text-green-600 mr-2" /> : <WifiOff className="h-5 w-5 text-orange-600 mr-2" />}
-              <span className="font-semibold text-gray-900">{currentNetwork.name}</span>
-              <span className={`ml-2 px-2 py-1 text-xs rounded-full ${getDifficultyColor(currentNetwork.difficulty)}`}>
-                {currentNetwork.difficulty}
-              </span>
-            </div>
-            <div className="text-sm text-gray-600">
-              Chain ID: {chainId}
-            </div>
-          </div>
-          <p className="text-sm text-gray-700 mb-2">{currentNetwork.description}</p>
-          <div className="flex items-center space-x-4 text-sm">
-            <span className="flex items-center">
-              <DollarSign className="h-4 w-4 mr-1" />
-              {currentNetwork.gasPrice}
-            </span>
-            <span className="flex items-center">
-              <Zap className="h-4 w-4 mr-1" />
-              {currentNetwork.speed}
-            </span>
-            <span className="flex items-center">
-              <Clock className="h-4 w-4 mr-1" />
-              {currentNetwork.currency}
-            </span>
-          </div>
-          {!hasContract && (
-            <div className="mt-2 text-sm text-orange-700">
-              ⚠️ No contract deployed on this network yet
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Network Options */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {Object.values(NETWORK_INFO).map((network) => {
-          const isActive = chainId === network.chain.id
-          const networkKey = getNetworkKey(network.chain.id)
-          const networkHasContract = networkKey ? !!contractsConfig.networks[networkKey]?.contracts?.MetaTalesNFT?.address : false
-          
-          return (
-            <div
-              key={network.chain.id}
-              className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                isActive 
-                  ? 'border-indigo-500 bg-indigo-50' 
-                  : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
-              }`}
-              onClick={() => {
-                if (!isActive) {
-                  handleNetworkSwitch(network.chain.id)
-                }
-              }}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-gray-900">{network.name}</h3>
-                <div className="flex items-center space-x-1">
-                  <span className={`px-2 py-1 text-xs rounded-full ${getDifficultyColor(network.difficulty)}`}>
-                    {network.difficulty}
-                  </span>
-                  {networkHasContract && (
-                    <div className="w-2 h-2 bg-green-500 rounded-full" title="Contract deployed"></div>
-                  )}
+    <div className="bg-white rounded-lg shadow-lg border max-w-4xl mx-auto">
+      <div className="p-6 border-b">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Network Selection</h2>
+        <p className="text-gray-600">
+          Choose the blockchain network for your Meta-Tales NFT experience
+        </p>
+        
+        {currentNetwork && (
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Wifi className="h-5 w-5 text-blue-600" />
+                <div>
+                  <p className="font-semibold text-blue-900">Currently connected to {currentNetwork.name}</p>
+                  <p className="text-sm text-blue-700">{currentNetwork.description}</p>
                 </div>
               </div>
-              
-              <p className="text-sm text-gray-600 mb-3">{network.description}</p>
-              
-              <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                <span>{network.currency}</span>
-                <span>{network.gasPrice}</span>
-                <span>{network.speed}</span>
-              </div>
-
-              {/* Pros */}
-              <div className="mb-2">
-                <p className="text-xs font-medium text-green-700 mb-1">Pros:</p>
-                <ul className="text-xs text-green-600 space-y-1">
-                  {network.pros.slice(0, 2).map((pro, i) => (
-                    <li key={i} className="flex items-center">
-                      <span className="w-1 h-1 bg-green-500 rounded-full mr-2"></span>
-                      {pro}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center justify-between mt-3">
-                {isActive ? (
-                  <span className="text-xs text-indigo-600 font-medium">✓ Active</span>
+              <div className="flex items-center space-x-2">
+                {hasContract ? (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    ✅ Contract Available
+                  </span>
                 ) : (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleNetworkSwitch(network.chain.id)
-                    }}
-                    disabled={isPending}
-                    className="text-xs text-indigo-600 hover:text-indigo-800 font-medium disabled:opacity-50"
-                  >
-                    {isPending ? <RefreshCw className="h-3 w-3 animate-spin" /> : 'Switch'}
-                  </button>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    ⚠️ Contract Not Deployed
+                  </span>
                 )}
-                
-                <div className="flex space-x-1">
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="p-6">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {Object.entries(NETWORK_INFO).map(([id, network]) => {
+            const chainId = parseInt(id)
+            const isSelected = selectedNetwork === chainId
+            const isCurrent = chainId === currentNetwork?.chain?.id
+            const contractDeployed = isContractDeployed(chainId)
+            
+            return (
+              <div
+                key={chainId}
+                className={`relative border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                  isCurrent
+                    ? 'border-blue-500 bg-blue-50'
+                    : isSelected
+                    ? 'border-purple-500 bg-purple-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => !isCurrent && handleNetworkSwitch(chainId)}
+              >
+                {isCurrent && (
+                  <div className="absolute -top-2 -right-2">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500 text-white">
+                      Current
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    {isCurrent ? (
+                      <Wifi className="h-5 w-5 text-blue-600" />
+                    ) : (
+                      <WifiOff className="h-5 w-5 text-gray-400" />
+                    )}
+                    <h3 className="font-semibold text-gray-900">{network.name}</h3>
+                  </div>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(network.difficulty)}`}>
+                    {network.difficulty}
+                  </span>
+                </div>
+
+                <p className="text-sm text-gray-600 mb-4">{network.description}</p>
+
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">Currency:</span>
+                    <span className="font-medium">{network.currency}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">Gas Price:</span>
+                    <div className="flex items-center space-x-1">
+                      {getPriceIcon(network.gasPrice)}
+                      <span className="font-medium">{network.gasPrice}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">Speed:</span>
+                    <div className="flex items-center space-x-1">
+                      {getSpeedIcon(network.speed)}
+                      <span className="font-medium">{network.speed}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">Contract:</span>
+                    <span className={`font-medium ${contractDeployed ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {contractDeployed ? '✅ Deployed' : '⚠️ Not Yet'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2 mb-4">
+                  <div>
+                    <h4 className="text-xs font-medium text-green-700 mb-1">✅ Pros</h4>
+                    <ul className="text-xs text-green-600 space-y-0.5">
+                      {network.pros.slice(0, 2).map((pro, idx) => (
+                        <li key={idx}>• {pro}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-medium text-red-700 mb-1">❌ Cons</h4>
+                    <ul className="text-xs text-red-600 space-y-0.5">
+                      {network.cons.slice(0, 2).map((con, idx) => (
+                        <li key={idx}>• {con}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="flex space-x-2">
                   {network.faucet && (
                     <a
                       href={network.faucet}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-gray-600"
-                      title="Get test tokens"
+                      className="flex-1 text-center text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 transition-colors"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <DollarSign className="h-3 w-3" />
+                      💰 Faucet
                     </a>
                   )}
                   {network.explorer && (
@@ -286,28 +297,33 @@ export function NetworkSelector() {
                       href={network.explorer}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-gray-600"
-                      title="Block explorer"
+                      className="flex-1 text-center text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <ExternalLink className="h-3 w-3" />
+                      🔍 Explorer
                     </a>
                   )}
                 </div>
-              </div>
-            </div>
-          )
-        })}
-      </div>
 
-      {/* Recommendations */}
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <h3 className="font-semibold text-blue-900 mb-2">💡 Recommendations</h3>
-        <div className="text-sm text-blue-800 space-y-1">
-          <p><strong>🏠 Local Development:</strong> Use Hardhat for fast, free testing</p>
-          <p><strong>🌐 Public Testing:</strong> Goerli is most stable, Mumbai is fastest</p>
-          <p><strong>🔗 Layer 2 Testing:</strong> Try Optimism or Arbitrum for scaling</p>
-          <p><strong>⚡ Speed Priority:</strong> Mumbai or BSC Testnet for fast transactions</p>
+                {isSelected && isPending && (
+                  <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
+                    <RefreshCw className="h-6 w-6 text-purple-600 animate-spin" />
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <h3 className="font-semibold text-gray-900 mb-2">💡 Quick Tips</h3>
+          <ul className="text-sm text-gray-600 space-y-1">
+            <li>• <strong>Hardhat:</strong> Best for local testing and development</li>
+            <li>• <strong>Sepolia:</strong> Reliable Ethereum testnet for realistic testing</li>
+            <li>• <strong>Amoy:</strong> Latest Polygon testnet with modern features</li>
+            <li>• <strong>Mumbai:</strong> Legacy Polygon testnet (being deprecated)</li>
+            <li>• <strong>BSC Testnet:</strong> Fast and cheap alternative ecosystem</li>
+          </ul>
         </div>
       </div>
     </div>

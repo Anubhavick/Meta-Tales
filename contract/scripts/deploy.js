@@ -33,12 +33,12 @@ async function main() {
 
   await metaTalesNFT.waitForDeployment();
 
-  console.log("\n✅ Meta-Tales NFT contract deployed successfully!");
+  console.log("\n Meta-Tales NFT contract deployed successfully!");
   console.log("Contract address:", await metaTalesNFT.getAddress());
   console.log("Transaction hash:", metaTalesNFT.deploymentTransaction().hash);
 
   // Verify deployment
-  console.log("\n📋 Contract Details:");
+  console.log("\n Contract Details:");
   console.log("- Name:", await metaTalesNFT.name());
   console.log("- Symbol:", await metaTalesNFT.symbol());
   console.log("- Owner:", await metaTalesNFT.owner());
@@ -57,7 +57,7 @@ async function main() {
 main()
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error("❌ Deployment failed:");
+    console.error(" Deployment failed:");
     console.error(error);
     process.exit(1);
   });

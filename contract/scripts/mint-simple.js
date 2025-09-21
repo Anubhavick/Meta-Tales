@@ -43,7 +43,7 @@ async function main() {
     
     console.log("Transaction submitted:", tx.hash);
     const receipt = await tx.wait();
-    console.log("✅ NFT minted successfully!");
+    console.log(" NFT minted successfully!");
     console.log("Transaction confirmed in block:", receipt.blockNumber);
     
     // Get the token ID from the Transfer event
@@ -59,7 +59,7 @@ async function main() {
     }
     
   } catch (error) {
-    console.error("❌ Error minting NFT:", error.message);
+    console.error(" Error minting NFT:", error.message);
   }
 }
 

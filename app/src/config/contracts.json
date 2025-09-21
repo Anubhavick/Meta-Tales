@@ -12,20 +12,6 @@
         }
       }
     },
-    "goerli": {
-      "name": "Goerli Testnet",
-      "chainId": 5,
-      "rpcUrl": "https://goerli.infura.io/v3/582157158e354118ae92c85b12417ff4",
-      "faucet": "https://goerlifaucet.com/",
-      "explorer": "https://goerli.etherscan.io",
-      "contracts": {
-        "MetaTalesNFT": {
-          "address": "TBD",
-          "deployedAt": "TBD",
-          "deployer": "TBD"
-        }
-      }
-    },
     "sepolia": {
       "name": "Sepolia Testnet", 
       "chainId": 11155111,
@@ -43,7 +29,7 @@
     "mumbai": {
       "name": "Mumbai Testnet (Polygon)",
       "chainId": 80001,
-      "rpcUrl": "https://rpc-mumbai.maticvigil.com",
+      "rpcUrl": "https://polygon-testnet.public.blastapi.io",
       "faucet": "https://faucet.polygon.technology/",
       "explorer": "https://mumbai.polygonscan.com",
       "currency": "MATIC",
@@ -55,26 +41,13 @@
         }
       }
     },
-    "optimismGoerli": {
-      "name": "Optimism Goerli",
-      "chainId": 420,
-      "rpcUrl": "https://goerli.optimism.io",
-      "faucet": "https://community.optimism.io/docs/useful-tools/faucets/",
-      "explorer": "https://goerli-optimism.etherscan.io",
-      "contracts": {
-        "MetaTalesNFT": {
-          "address": "TBD",
-          "deployedAt": "TBD",
-          "deployer": "TBD"
-        }
-      }
-    },
-    "arbitrumGoerli": {
-      "name": "Arbitrum Goerli",
-      "chainId": 421613,
-      "rpcUrl": "https://goerli-rollup.arbitrum.io/rpc",
-      "faucet": "https://bridge.arbitrum.io/",
-      "explorer": "https://goerli.arbiscan.io",
+    "amoy": {
+      "name": "Polygon Amoy Testnet",
+      "chainId": 80002,
+      "rpcUrl": "https://polygon-amoy.g.alchemy.com/v2/EYsypPy7jvapUozpCyRgw",
+      "faucet": "https://faucet.polygon.technology/",
+      "explorer": "https://amoy.polygonscan.com",
+      "currency": "POL",
       "contracts": {
         "MetaTalesNFT": {
           "address": "TBD",

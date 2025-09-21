@@ -15,15 +15,15 @@ export function AddHardhatNetworkButton() {
     setIsAdding(true)
     try {
       if (isOnHardhat) {
-        // Already on Hardhat, just show success
+        
         return
       }
 
-      // Try to switch using Wagmi first
+
       try {
         await switchChain({ chainId: hardhat.id })
       } catch (error) {
-        // If Wagmi fails, try adding the network manually
+        
         console.log('Wagmi switch failed, trying manual add...')
         const success = await addHardhatNetwork()
         if (success) {

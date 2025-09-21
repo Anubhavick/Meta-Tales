@@ -10,7 +10,7 @@ async function main() {
   console.log("Account balance:", hre.ethers.utils.formatEther(balance), "MATIC");
   
   if (balance.eq(0)) {
-    console.log("❌ Insufficient balance! Get Mumbai MATIC from: https://faucet.polygon.technology/");
+    console.log(" Insufficient balance! Get Mumbai MATIC from: https://faucet.polygon.technology/");
     return;
   }
 
@@ -19,11 +19,11 @@ async function main() {
   
   await metaTalesNFT.deployed();
   
-  console.log("✅ MetaTalesNFT deployed to:", metaTalesNFT.address);
-  console.log("🔗 Transaction hash:", metaTalesNFT.deployTransaction.hash);
-  console.log("🌐 View on PolygonScan: https://mumbai.polygonscan.com/tx/" + metaTalesNFT.deployTransaction.hash);
-  
-  console.log("\n📝 Update your .env file with:");
+  console.log("MetaTalesNFT deployed to:", metaTalesNFT.address);
+  console.log("Transaction hash:", metaTalesNFT.deployTransaction.hash);
+  console.log("View on PolygonScan: https://mumbai.polygonscan.com/tx/" + metaTalesNFT.deployTransaction.hash);
+
+  console.log("\nUpdate your .env file with:");
   console.log(`MUMBAI_CONTRACT_ADDRESS=${metaTalesNFT.address}`);
 }
 

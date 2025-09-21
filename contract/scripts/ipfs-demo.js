@@ -10,7 +10,7 @@ async function demo() {
   // Check if API key is provided
   const apiKey = process.env.NFT_STORAGE_API_KEY;
   if (!apiKey) {
-    console.log('❌ Please set NFT_STORAGE_API_KEY in your .env file');
+    console.log(' Please set NFT_STORAGE_API_KEY in your .env file');
     console.log('Get your free API key from: https://nft.storage/');
     console.log('Add this line to your .env file:');
     console.log('NFT_STORAGE_API_KEY=your_api_key_here');
