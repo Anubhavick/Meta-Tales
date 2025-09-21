@@ -6,9 +6,9 @@ import { BookOpen, Home, Palette, User, Plus } from 'lucide-react'
 
 export function Navigation() {
   return (
-    <nav className="bg-white border-b border-gray-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+    <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-6xl mx-auto px-4">
+      <div className="bg-white/80 backdrop-blur-lg border border-white/20 shadow-lg rounded-2xl">
+        <div className="flex justify-between items-center h-16 px-6">
           {/* Logo and brand */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
@@ -21,7 +21,7 @@ export function Navigation() {
           <div className="hidden md:flex items-center space-x-8">
             <Link 
               href="/" 
-              className="flex items-center space-x-1 text-gray-600 hover:text-indigo-600 transition-colors"
+              className="flex items-center space-x-1 text-gray-700 hover:text-indigo-600 transition-colors font-medium"
             >
               <Home className="h-4 w-4" />
               <span>Home</span>
@@ -29,7 +29,7 @@ export function Navigation() {
             
             <Link 
               href="/mint" 
-              className="flex items-center space-x-1 text-gray-600 hover:text-indigo-600 transition-colors"
+              className="flex items-center space-x-1 text-gray-700 hover:text-indigo-600 transition-colors font-medium"
             >
               <Plus className="h-4 w-4" />
               <span>Mint NFT</span>
@@ -37,7 +37,7 @@ export function Navigation() {
             
             <Link 
               href="/gallery" 
-              className="flex items-center space-x-1 text-gray-600 hover:text-indigo-600 transition-colors"
+              className="flex items-center space-x-1 text-gray-700 hover:text-indigo-600 transition-colors font-medium"
             >
               <Palette className="h-4 w-4" />
               <span>Gallery</span>
@@ -45,7 +45,7 @@ export function Navigation() {
             
             <Link 
               href="/dashboard" 
-              className="flex items-center space-x-1 text-gray-600 hover:text-indigo-600 transition-colors"
+              className="flex items-center space-x-1 text-gray-700 hover:text-indigo-600 transition-colors font-medium"
             >
               <User className="h-4 w-4" />
               <span>Dashboard</span>
@@ -60,39 +60,41 @@ export function Navigation() {
       </div>
 
       {/* Mobile navigation */}
-      <div className="md:hidden border-t border-gray-200 bg-gray-50">
-        <div className="flex justify-around py-2">
-          <Link 
-            href="/" 
-            className="flex flex-col items-center p-2 text-gray-600 hover:text-indigo-600"
-          >
-            <Home className="h-5 w-5" />
-            <span className="text-xs mt-1">Home</span>
-          </Link>
-          
-          <Link 
-            href="/mint" 
-            className="flex flex-col items-center p-2 text-gray-600 hover:text-indigo-600"
-          >
-            <Plus className="h-5 w-5" />
-            <span className="text-xs mt-1">Mint</span>
-          </Link>
-          
-          <Link 
-            href="/gallery" 
-            className="flex flex-col items-center p-2 text-gray-600 hover:text-indigo-600"
-          >
-            <Palette className="h-5 w-5" />
-            <span className="text-xs mt-1">Gallery</span>
-          </Link>
-          
-          <Link 
-            href="/dashboard" 
-            className="flex flex-col items-center p-2 text-gray-600 hover:text-indigo-600"
-          >
-            <User className="h-5 w-5" />
-            <span className="text-xs mt-1">Dashboard</span>
-          </Link>
+      <div className="md:hidden mt-2">
+        <div className="bg-white/80 backdrop-blur-lg border border-white/20 shadow-lg rounded-2xl">
+          <div className="flex justify-around py-3">
+            <Link 
+              href="/" 
+              className="flex flex-col items-center p-2 text-gray-700 hover:text-indigo-600 transition-colors"
+            >
+              <Home className="h-5 w-5" />
+              <span className="text-xs mt-1 font-medium">Home</span>
+            </Link>
+            
+            <Link 
+              href="/mint" 
+              className="flex flex-col items-center p-2 text-gray-700 hover:text-indigo-600 transition-colors"
+            >
+              <Plus className="h-5 w-5" />
+              <span className="text-xs mt-1 font-medium">Mint</span>
+            </Link>
+            
+            <Link 
+              href="/gallery" 
+              className="flex flex-col items-center p-2 text-gray-700 hover:text-indigo-600 transition-colors"
+            >
+              <Palette className="h-5 w-5" />
+              <span className="text-xs mt-1 font-medium">Gallery</span>
+            </Link>
+            
+            <Link 
+              href="/dashboard" 
+              className="flex flex-col items-center p-2 text-gray-700 hover:text-indigo-600 transition-colors"
+            >
+              <User className="h-5 w-5" />
+              <span className="text-xs mt-1 font-medium">Dashboard</span>
+            </Link>
+          </div>
         </div>
       </div>
     </nav>

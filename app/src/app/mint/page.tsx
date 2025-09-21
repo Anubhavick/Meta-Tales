@@ -1,6 +1,7 @@
 'use client'
 
 import { Navigation } from '@/components/Navigation'
+import { Footer } from '@/components/Footer'
 import { useState } from 'react'
 import { FileText, ImageIcon, AlertCircle, CheckCircle, Loader2, Sparkles, RefreshCw, Wand2 } from 'lucide-react'
 import { useMintNFT } from '../../hooks/useMintNFT'
@@ -313,16 +314,21 @@ export default function MintPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <Navigation />
       
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Mint Your Literary NFT
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 text-sm font-medium mb-6">
+            <Sparkles className="w-4 h-4 mr-2" />
+            AI-Powered NFT Creation
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            Mint Your
+            <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent"> Literary NFT</span>
           </h1>
-          <p className="text-xl text-gray-600">
-            Transform your creative work into a blockchain-verified NFT with built-in royalties
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Transform your creative work into a blockchain-verified NFT with built-in royalties and AI-powered enhancements
           </p>
         </div>
 
@@ -407,55 +413,59 @@ export default function MintPage() {
         )}
 
         {/* Mint Form */}
-        <div className="bg-white rounded-lg shadow border p-8">
-          <form className="space-y-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-10 mb-16">
+          <form className="space-y-10">
             {/* Title */}
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-3">
+              <label htmlFor="title" className="block text-base font-bold text-gray-900 mb-3">
                 Title *
               </label>
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="Enter the title of your literary work"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => correctGrammar('title')}
-                  disabled={aiLoading.grammar || !formData.title.trim()}
-                  className="px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Fix grammar and spelling"
-                >
-                  {aiLoading.grammar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={generateTitleSuggestions}
-                  disabled={aiLoading.title || (!formData.description.trim() && !formData.title.trim())}
-                  className="px-3 py-2 text-sm font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-md hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Generate title suggestions"
-                >
-                  {aiLoading.title ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                </button>
+              <div className="relative">
+                <div className="flex space-x-3">
+                  <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    placeholder="Enter the title of your literary work"
+                    className="flex-1 px-4 py-4 border-2 border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white transition-all duration-200 text-lg"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => correctGrammar('title')}
+                    disabled={aiLoading.grammar || !formData.title.trim()}
+                    className="px-6 py-4 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 border-0 rounded-2xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+                    title="Fix grammar and spelling"
+                  >
+                    {aiLoading.grammar ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wand2 className="h-5 w-5" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={generateTitleSuggestions}
+                    disabled={aiLoading.title || (!formData.description.trim() && !formData.title.trim())}
+                    className="px-6 py-4 text-sm font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 border-0 rounded-2xl hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+                    title="Generate title suggestions"
+                  >
+                    {aiLoading.title ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+                  </button>
+                </div>
               </div>
-              
               {/* Title Suggestions */}
               {aiSuggestions.titles.length > 0 && (
-                <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-md">
-                  <h4 className="text-sm font-medium text-purple-800 mb-2">AI Title Suggestions:</h4>
-                  <div className="space-y-1">
+                <div className="mt-4 p-6 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl">
+                  <h4 className="text-base font-bold text-purple-900 mb-4 flex items-center">
+                    <Sparkles className="h-5 w-5 mr-2" />
+                    AI Title Suggestions:
+                  </h4>
+                  <div className="space-y-2">
                     {aiSuggestions.titles.map((title, index) => (
                       <button
                         key={index}
                         type="button"
                         onClick={() => selectTitle(title)}
-                        className="block w-full text-left px-2 py-1 text-sm text-purple-700 hover:bg-purple-100 rounded transition-colors"
+                        className="block w-full text-left px-4 py-3 text-sm text-purple-800 hover:bg-purple-100 rounded-xl transition-all duration-200 hover:shadow-md font-medium"
                       >
                         {title}
                       </button>
@@ -464,7 +474,7 @@ export default function MintPage() {
                   <button
                     type="button"
                     onClick={() => setAiSuggestions(prev => ({ ...prev, titles: [] }))}
-                    className="mt-2 text-xs text-purple-600 hover:text-purple-800"
+                    className="mt-3 text-sm text-purple-600 hover:text-purple-800 font-medium"
                   >
                     Close suggestions
                   </button>
@@ -473,31 +483,31 @@ export default function MintPage() {
             </div>
 
             {/* Description */}
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-3">
+              <label htmlFor="description" className="block text-base font-bold text-gray-900 mb-3">
                 Description *
               </label>
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <textarea
                   id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  rows={4}
+                  rows={5}
                   placeholder="Describe your literary work, its themes, and what makes it special"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white transition-all duration-200 text-lg resize-none"
                   required
                 />
                 
                 {/* AI Enhancement Buttons */}
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap gap-3">
                   <button
                     type="button"
                     onClick={() => correctGrammar('description')}
                     disabled={aiLoading.grammar || !formData.description.trim()}
-                    className="flex items-center space-x-1 px-3 py-1 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center space-x-2 px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 border-0 rounded-2xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
                   >
-                    {aiLoading.grammar ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                    {aiLoading.grammar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
                     <span>Fix Grammar</span>
                   </button>
                   
@@ -505,37 +515,39 @@ export default function MintPage() {
                     type="button"
                     onClick={enhanceDescription}
                     disabled={aiLoading.description || !formData.description.trim()}
-                    className="flex items-center space-x-1 px-3 py-1 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center space-x-2 px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 border-0 rounded-2xl hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
                   >
-                    {aiLoading.description ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                    {aiLoading.description ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                     <span>Enhance with AI</span>
                   </button>
                 </div>
               </div>
-              
               {/* Enhanced Description Preview */}
               {aiSuggestions.enhancedDescription && (
-                <div className="mt-3 p-4 bg-green-50 border border-green-200 rounded-md">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-green-800">AI Enhanced Description:</h4>
-                    <div className="flex space-x-2">
+                <div className="mt-4 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-base font-bold text-green-900 flex items-center">
+                      <Sparkles className="h-5 w-5 mr-2" />
+                      AI Enhanced Description:
+                    </h4>
+                    <div className="flex space-x-3">
                       <button
                         type="button"
                         onClick={applyEnhancedDescription}
-                        className="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700"
+                        className="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-xl hover:bg-green-700 transition-colors shadow-lg"
                       >
                         Use This
                       </button>
                       <button
                         type="button"
                         onClick={revertToOriginalDescription}
-                        className="px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded hover:bg-green-200"
+                        className="px-4 py-2 text-sm font-semibold text-green-700 bg-green-100 rounded-xl hover:bg-green-200 transition-colors"
                       >
                         Keep Original
                       </button>
                     </div>
                   </div>
-                  <p className="text-sm text-green-700 leading-relaxed">
+                  <p className="text-base text-green-800 leading-relaxed">
                     {aiSuggestions.enhancedDescription}
                   </p>
                 </div>
@@ -543,8 +555,8 @@ export default function MintPage() {
             </div>
 
             {/* Content Type */}
-            <div>
-              <label htmlFor="contentType" className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-3">
+              <label htmlFor="contentType" className="block text-base font-bold text-gray-900 mb-3">
                 Content Type *
               </label>
               <select
@@ -552,26 +564,26 @@ export default function MintPage() {
                 name="contentType"
                 value={formData.contentType}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white text-lg"
                 required
               >
                 <option value="">Select content type</option>
-                <option value="story">Story</option>
-                <option value="poem">Poem</option>
-                <option value="comic">Comic</option>
+                <option value="story">📖 Story</option>
+                <option value="poem">🎭 Poem</option>
+                <option value="comic">🎨 Comic</option>
               </select>
             </div>
 
             {/* Cover Image */}
-            <div>
-              <label htmlFor="coverImage" className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-3">
+              <label htmlFor="coverImage" className="block text-base font-bold text-gray-900 mb-3">
                 Cover Image *
               </label>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                <div className="space-y-1 text-center">
-                  <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="flex text-sm text-gray-600">
-                    <label htmlFor="coverImage" className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+              <div className="mt-1 flex justify-center px-8 pt-8 pb-8 border-2 border-dashed border-gray-300 rounded-3xl hover:border-purple-400 transition-colors duration-200 bg-gradient-to-br from-gray-50 to-gray-100">
+                <div className="space-y-2 text-center">
+                  <ImageIcon className="mx-auto h-16 w-16 text-gray-400" />
+                  <div className="flex text-lg text-gray-600">
+                    <label htmlFor="coverImage" className="relative cursor-pointer bg-white rounded-2xl font-semibold text-purple-600 hover:text-purple-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-purple-500 px-4 py-2 shadow-md hover:shadow-lg transition-all duration-200">
                       <span>Upload cover image</span>
                       <input
                         id="coverImage"
@@ -583,19 +595,19 @@ export default function MintPage() {
                         required
                       />
                     </label>
-                    <p className="pl-1">or drag and drop</p>
+                    <p className="pl-2 self-center">or drag and drop</p>
                   </div>
-                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                  <p className="text-sm text-gray-500">PNG, JPG, GIF up to 10MB</p>
                   {formData.coverImage && (
-                    <p className="text-sm text-green-600">✓ {formData.coverImage.name}</p>
+                    <p className="text-base text-green-600 font-semibold">✓ {formData.coverImage.name}</p>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Content File */}
-            <div>
-              <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-2">
+              <label htmlFor="content" className="block text-sm font-semibold text-gray-800 mb-2">
                 Literary Work File (Optional)
               </label>
               <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
@@ -624,8 +636,8 @@ export default function MintPage() {
             </div>
 
             {/* Royalty Percentage */}
-            <div>
-              <label htmlFor="royaltyPercentage" className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-2">
+              <label htmlFor="royaltyPercentage" className="block text-sm font-semibold text-gray-800 mb-2">
                 Royalty Percentage
               </label>
               <div className="flex items-center space-x-2">
@@ -638,7 +650,7 @@ export default function MintPage() {
                   min="0"
                   max="10"
                   step="0.5"
-                  className="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 bg-white"
                 />
                 <span className="text-sm text-gray-600">% royalty on secondary sales</span>
               </div>
@@ -648,20 +660,23 @@ export default function MintPage() {
             </div>
 
             {/* Mint Button */}
-            <div className="pt-6">
+            <div className="pt-8">
               <button
                 type="button"
                 onClick={handleMint}
                 disabled={!isConnected || isLoading || !validateForm() || uploadStatus === 'uploading'}
-                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center items-center py-6 px-8 border-0 rounded-3xl shadow-2xl text-xl font-bold text-white bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-700 hover:via-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-4 focus:ring-purple-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 hover:shadow-3xl"
               >
                 {uploadStatus === 'uploading' || isLoading ? (
                   <>
-                    <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5" />
+                    <Loader2 className="animate-spin -ml-1 mr-4 h-6 w-6" />
                     {uploadStatus === 'uploading' ? 'Uploading to IPFS...' : 'Minting NFT...'}
                   </>
                 ) : (
-                  'Mint NFT'
+                  <>
+                    <Sparkles className="mr-3 h-6 w-6" />
+                    Mint Your NFT
+                  </>
                 )}
               </button>
             </div>
@@ -669,86 +684,88 @@ export default function MintPage() {
         </div>
 
         {/* Information Section */}
-        <div className="mt-12 space-y-8">
+        <div className="mt-20 space-y-12">
           {/* AI Features Section */}
-          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-6 border border-purple-200">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-purple-900 flex items-center">
-                <Sparkles className="h-5 w-5 mr-2 text-purple-600" />
+          <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 rounded-3xl p-10 border border-purple-200 shadow-xl">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-2xl font-bold text-purple-900 flex items-center">
+                <Sparkles className="h-7 w-7 mr-3 text-purple-600" />
                 AI-Powered Enhancement Features
               </h3>
-              <div className="flex space-x-2">
+              <div className="flex space-x-3">
                 <button
                   type="button"
                   onClick={listModels}
                   disabled={aiLoading.title}
-                  className="px-3 py-1 text-xs font-medium text-purple-600 bg-purple-100 border border-purple-300 rounded-md hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-semibold text-purple-600 bg-purple-100 border border-purple-300 rounded-xl hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 transition-all duration-200"
                 >
-                  {aiLoading.title ? <Loader2 className="h-3 w-3 animate-spin" /> : 'List Models'}
+                  {aiLoading.title ? <Loader2 className="h-4 w-4 animate-spin" /> : 'List Models'}
                 </button>
                 <button
                   type="button"
                   onClick={testGeminiAPI}
                   disabled={aiLoading.grammar}
-                  className="px-3 py-1 text-xs font-medium text-purple-600 bg-purple-100 border border-purple-300 rounded-md hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-semibold text-purple-600 bg-purple-100 border border-purple-300 rounded-xl hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 transition-all duration-200"
                 >
-                  {aiLoading.grammar ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Test API'}
+                  {aiLoading.grammar ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Test API'}
                 </button>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                  <Wand2 className="h-6 w-6 text-purple-600" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center group">
+                <div className="bg-purple-100 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-200">
+                  <Wand2 className="h-8 w-8 text-purple-600" />
                 </div>
-                <h4 className="font-medium text-purple-900">Grammar Correction</h4>
-                <p className="text-sm text-purple-700">Fix spelling and grammar errors while preserving your unique voice</p>
+                <h4 className="font-bold text-purple-900 text-lg mb-2">Grammar Correction</h4>
+                <p className="text-base text-purple-700">Fix spelling and grammar errors while preserving your unique voice</p>
               </div>
-              <div className="text-center">
-                <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                  <Sparkles className="h-6 w-6 text-purple-600" />
+              <div className="text-center group">
+                <div className="bg-purple-100 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-200">
+                  <Sparkles className="h-8 w-8 text-purple-600" />
                 </div>
-                <h4 className="font-medium text-purple-900">Content Enhancement</h4>
-                <p className="text-sm text-purple-700">Improve descriptions to make them more engaging for collectors</p>
+                <h4 className="font-bold text-purple-900 text-lg mb-2">Content Enhancement</h4>
+                <p className="text-base text-purple-700">Improve descriptions to make them more engaging for collectors</p>
               </div>
-              <div className="text-center">
-                <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                  <RefreshCw className="h-6 w-6 text-purple-600" />
+              <div className="text-center group">
+                <div className="bg-purple-100 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-200">
+                  <RefreshCw className="h-8 w-8 text-purple-600" />
                 </div>
-                <h4 className="font-medium text-purple-900">Title Suggestions</h4>
-                <p className="text-sm text-purple-700">Generate creative titles that capture your work's essence</p>
+                <h4 className="font-bold text-purple-900 text-lg mb-2">Title Suggestions</h4>
+                <p className="text-base text-purple-700">Generate creative titles that capture your work's essence</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-blue-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-blue-900 mb-4">How It Works</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                  <span className="text-blue-600 font-bold">1</span>
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-10 shadow-xl">
+            <h3 className="text-2xl font-bold text-blue-900 mb-8 text-center">How It Works</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center group">
+                <div className="bg-blue-100 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-200">
+                  <span className="text-blue-600 font-bold text-2xl">1</span>
                 </div>
-                <h4 className="font-medium text-blue-900">Upload</h4>
-                <p className="text-sm text-blue-700">Your files are stored on IPFS for decentralized access</p>
+                <h4 className="font-bold text-blue-900 text-lg mb-2">Upload</h4>
+                <p className="text-base text-blue-700">Your files are stored on IPFS for decentralized access</p>
               </div>
-              <div className="text-center">
-                <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                  <span className="text-blue-600 font-bold">2</span>
+              <div className="text-center group">
+                <div className="bg-blue-100 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-200">
+                  <span className="text-blue-600 font-bold text-2xl">2</span>
                 </div>
-                <h4 className="font-medium text-blue-900">Mint</h4>
-                <p className="text-sm text-blue-700">Your NFT is created on the blockchain with royalties</p>
+                <h4 className="font-bold text-blue-900 text-lg mb-2">Mint</h4>
+                <p className="text-base text-blue-700">Your NFT is created on the blockchain with royalties</p>
               </div>
-              <div className="text-center">
-                <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                  <span className="text-blue-600 font-bold">3</span>
+              <div className="text-center group">
+                <div className="bg-blue-100 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-200">
+                  <span className="text-blue-600 font-bold text-2xl">3</span>
                 </div>
-                <h4 className="font-medium text-blue-900">Earn</h4>
-                <p className="text-sm text-blue-700">Receive royalties from all future sales automatically</p>
+                <h4 className="font-bold text-blue-900 text-lg mb-2">Earn</h4>
+                <p className="text-base text-blue-700">Receive royalties from all future sales automatically</p>
               </div>
             </div>
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   )
 }

@@ -1,8 +1,9 @@
 'use client'
 
 import { Navigation } from '@/components/Navigation'
+import { Footer } from '@/components/Footer'
 import { useState, useEffect } from 'react'
-import { Search, BookOpen, Heart, ExternalLink, User, FileImage } from 'lucide-react'
+import { Search, BookOpen, Heart, ExternalLink, User, FileImage, Sparkles, Filter, TrendingUp, Clock, Eye } from 'lucide-react'
 import Image from 'next/image'
 
 interface NFTItem {
@@ -16,6 +17,7 @@ interface NFTItem {
   price?: string
   isForSale: boolean
   likes: number
+  views: number
   createdAt: string
 }
 
@@ -32,6 +34,7 @@ const mockNFTs: NFTItem[] = [
     price: '0.5',
     isForSale: true,
     likes: 24,
+    views: 152,
     createdAt: '2025-01-15'
   },
   {
@@ -44,6 +47,7 @@ const mockNFTs: NFTItem[] = [
     creatorAddress: '0xabcd...efgh',
     isForSale: false,
     likes: 18,
+    views: 89,
     createdAt: '2025-01-14'
   },
   {
@@ -57,6 +61,7 @@ const mockNFTs: NFTItem[] = [
     price: '1.2',
     isForSale: true,
     likes: 42,
+    views: 203,
     createdAt: '2025-01-13'
   },
   {
@@ -70,6 +75,7 @@ const mockNFTs: NFTItem[] = [
     price: '0.3',
     isForSale: true,
     likes: 31,
+    views: 76,
     createdAt: '2025-01-12'
   },
   {
@@ -82,6 +88,7 @@ const mockNFTs: NFTItem[] = [
     creatorAddress: '0x5555...6666',
     isForSale: false,
     likes: 67,
+    views: 134,
     createdAt: '2025-01-11'
   },
   {
@@ -95,6 +102,7 @@ const mockNFTs: NFTItem[] = [
     price: '0.8',
     isForSale: true,
     likes: 55,
+    views: 98,
     createdAt: '2025-01-10'
   }
 ]
@@ -158,23 +166,23 @@ export default function GalleryPage() {
   const getContentTypeColor = (type: string) => {
     switch (type) {
       case 'story':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-blue-500/20 text-blue-200 border-blue-400/30'
       case 'poem':
-        return 'bg-purple-100 text-purple-800'
+        return 'bg-purple-500/20 text-purple-200 border-purple-400/30'
       case 'comic':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-500/20 text-green-200 border-green-400/30'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-gray-500/20 text-gray-200 border-gray-400/30'
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <Navigation />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400"></div>
           </div>
         </div>
       </div>
@@ -182,32 +190,56 @@ export default function GalleryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <Navigation />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent mb-4">
             Literary NFT Gallery
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-purple-200 max-w-3xl mx-auto mb-8">
             Discover and collect unique literary works from creators around the world
           </p>
+          
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-4">
+              <div className="text-2xl font-bold text-white">{nfts.length}</div>
+              <div className="text-purple-200 text-sm">Total NFTs</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-4">
+              <div className="text-2xl font-bold text-white">{nfts.filter(n => n.isForSale).length}</div>
+              <div className="text-purple-200 text-sm">For Sale</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-4">
+              <div className="text-2xl font-bold text-white">{nfts.reduce((acc, n) => acc + n.views, 0).toLocaleString()}</div>
+              <div className="text-purple-200 text-sm">Total Views</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-4">
+              <div className="text-2xl font-bold text-white">{nfts.reduce((acc, n) => acc + n.likes, 0)}</div>
+              <div className="text-purple-200 text-sm">Total Likes</div>
+            </div>
+          </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-6 mb-8 shadow-2xl">
+          <div className="flex items-center mb-4">
+            <Filter className="h-5 w-5 text-purple-300 mr-2" />
+            <h3 className="text-lg font-semibold text-white">Filter & Search</h3>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-purple-300" />
               <input
                 type="text"
                 placeholder="Search titles, descriptions, creators..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-lg focus:ring-purple-400 focus:border-purple-400 text-white placeholder-purple-200 backdrop-blur-sm"
               />
             </div>
 
@@ -215,24 +247,24 @@ export default function GalleryPage() {
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value as 'all' | 'story' | 'poem' | 'comic')}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+              className="px-3 py-2 bg-white/20 border border-white/30 rounded-lg focus:ring-purple-400 focus:border-purple-400 text-white backdrop-blur-sm"
             >
-              <option value="all">All Types</option>
-              <option value="story">Stories</option>
-              <option value="poem">Poems</option>
-              <option value="comic">Comics</option>
+              <option value="all" className="text-gray-900">All Types</option>
+              <option value="story" className="text-gray-900">Stories</option>
+              <option value="poem" className="text-gray-900">Poems</option>
+              <option value="comic" className="text-gray-900">Comics</option>
             </select>
 
             {/* Sort */}
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'likes' | 'price')}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+              className="px-3 py-2 bg-white/20 border border-white/30 rounded-lg focus:ring-purple-400 focus:border-purple-400 text-white backdrop-blur-sm"
             >
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="likes">Most Liked</option>
-              <option value="price">Highest Price</option>
+              <option value="newest" className="text-gray-900">Newest</option>
+              <option value="oldest" className="text-gray-900">Oldest</option>
+              <option value="likes" className="text-gray-900">Most Liked</option>
+              <option value="price" className="text-gray-900">Highest Price</option>
             </select>
 
             {/* For Sale Only */}
@@ -241,16 +273,16 @@ export default function GalleryPage() {
                 type="checkbox"
                 checked={showForSaleOnly}
                 onChange={(e) => setShowForSaleOnly(e.target.checked)}
-                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="rounded border-white/30 text-purple-400 focus:ring-purple-400 bg-white/20"
               />
-              <span className="text-sm text-gray-700">For sale only</span>
+              <span className="text-sm text-purple-200">For sale only</span>
             </label>
           </div>
         </div>
 
         {/* Results Count */}
         <div className="mb-6">
-          <p className="text-gray-600">
+          <p className="text-purple-200">
             Showing {filteredAndSortedNFTs.length} of {nfts.length} NFTs
           </p>
         </div>
@@ -258,71 +290,84 @@ export default function GalleryPage() {
         {/* NFT Grid */}
         {filteredAndSortedNFTs.length === 0 ? (
           <div className="text-center py-12">
-            <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No NFTs found</h3>
-            <p className="text-gray-600">Try adjusting your search or filter criteria</p>
+            <BookOpen className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-white mb-2">No NFTs found</h3>
+            <p className="text-purple-300">Try adjusting your search or filter criteria</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredAndSortedNFTs.map((nft) => (
-              <div key={nft.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+              <div key={nft.id} className="group bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 overflow-hidden hover:bg-white/15 transition-all duration-300 hover:scale-105 shadow-2xl">
                 {/* Cover Image */}
-                <div className="relative h-48 bg-gray-200">
+                <div className="relative h-52 bg-gradient-to-br from-purple-500/20 to-blue-500/20">
                   <Image
                     src={nft.coverImage}
                     alt={nft.title}
                     fill
-                    className="object-cover"
+                    className="object-cover rounded-t-2xl"
                   />
-                  <div className="absolute top-2 right-2">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getContentTypeColor(nft.contentType)}`}>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute top-3 right-3">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm border border-white/30 ${getContentTypeColor(nft.contentType)}`}>
                       {getContentTypeIcon(nft.contentType)}
                       <span className="ml-1 capitalize">{nft.contentType}</span>
                     </span>
+                  </div>
+                  <div className="absolute bottom-3 left-3 flex items-center gap-3 text-white">
+                    <div className="flex items-center text-sm">
+                      <Eye className="h-4 w-4 mr-1" />
+                      {nft.views}
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <Heart className="h-4 w-4 mr-1" />
+                      {nft.likes}
+                    </div>
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{nft.title}</h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">{nft.description}</p>
+                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-200 transition-colors">{nft.title}</h3>
+                  <p className="text-purple-200 text-sm mb-4 line-clamp-2 leading-relaxed">{nft.description}</p>
                   
                   {/* Creator */}
                   <div className="flex items-center mb-4">
-                    <User className="h-4 w-4 text-gray-400 mr-2" />
-                    <span className="text-sm text-gray-600">
+                    <User className="h-4 w-4 text-purple-300 mr-2" />
+                    <span className="text-sm text-purple-200">
                       {nft.creator}
                     </span>
                   </div>
 
                   {/* Stats and Price */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-4">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Heart className="h-4 w-4 mr-1" />
-                        {nft.likes}
+                      <div className="flex items-center text-sm text-purple-300">
+                        <Clock className="h-4 w-4 mr-1" />
+                        {new Date(nft.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                     
                     {nft.isForSale && nft.price && (
-                      <div className="text-lg font-semibold text-indigo-600">
+                      <div className="text-lg font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
                         {nft.price} ETH
                       </div>
                     )}
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="mt-4 flex gap-2">
-                    <button className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium">
+                  <div className="flex gap-2">
+                    <button className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2.5 px-4 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-purple-500/25">
+                      <Sparkles className="h-4 w-4 inline mr-2" />
                       View Details
                     </button>
                     {nft.isForSale && (
-                      <button className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+                      <button className="bg-gradient-to-r from-green-500 to-emerald-500 text-white py-2.5 px-4 rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-green-500/25">
+                        <TrendingUp className="h-4 w-4 inline mr-2" />
                         Buy Now
                       </button>
                     )}
-                    <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                      <ExternalLink className="h-4 w-4 text-gray-600" />
+                    <button className="p-2.5 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-300 backdrop-blur-sm">
+                      <ExternalLink className="h-4 w-4 text-purple-200" />
                     </button>
                   </div>
                 </div>
@@ -331,6 +376,8 @@ export default function GalleryPage() {
           </div>
         )}
       </div>
+      
+      <Footer />
     </div>
   )
 }
