@@ -2,9 +2,10 @@
 
 import { Navigation } from '@/components/Navigation'
 import { useState } from 'react'
-import { FileText, ImageIcon, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+import { FileText, ImageIcon, AlertCircle, CheckCircle, Loader2, Sparkles, RefreshCw, Wand2 } from 'lucide-react'
 import { useMintNFT } from '../../hooks/useMintNFT'
 import { useAccount } from 'wagmi'
+import { geminiAI, type ImprovementOptions } from '@/services/geminiAI'
 
 type ContentType = 'story' | 'poem' | 'comic' | ''
 
@@ -34,6 +35,26 @@ export default function MintPage() {
   const [txHash, setTxHash] = useState<string>('')
   const [tokenId, setTokenId] = useState<string>('')
   const [errorMessage, setErrorMessage] = useState<string>('')
+  
+  // AI Enhancement states
+  const [aiLoading, setAiLoading] = useState<{
+    title: boolean
+    description: boolean
+    grammar: boolean
+  }>({
+    title: false,
+    description: false,
+    grammar: false
+  })
+  const [aiSuggestions, setAiSuggestions] = useState<{
+    titles: string[]
+    originalDescription: string
+    enhancedDescription: string
+  }>({
+    titles: [],
+    originalDescription: '',
+    enhancedDescription: ''
+  })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -49,6 +70,181 @@ export default function MintPage() {
       ...prev,
       [fileType]: file
     }))
+  }
+
+  // AI Enhancement Functions
+  const correctGrammar = async (field: 'title' | 'description') => {
+    const text = formData[field]
+    if (!text.trim()) return
+
+    setAiLoading(prev => ({ ...prev, grammar: true }))
+    
+    try {
+      const result = await geminiAI.correctGrammar(text, formData.contentType || 'general')
+      
+      if (result.success && result.content) {
+        setFormData(prev => ({
+          ...prev,
+          [field]: result.content!.trim()
+        }))
+      } else {
+        setErrorMessage(result.error || 'Failed to correct grammar')
+      }
+    } catch (error) {
+      console.error('Grammar correction failed:', error)
+      setErrorMessage('Grammar correction failed. Please try again.')
+    } finally {
+      setAiLoading(prev => ({ ...prev, grammar: false }))
+    }
+  }
+
+  const enhanceDescription = async () => {
+    if (!formData.description.trim()) return
+
+    setAiLoading(prev => ({ ...prev, description: true }))
+    
+    try {
+      // Store original for comparison
+      setAiSuggestions(prev => ({
+        ...prev,
+        originalDescription: formData.description
+      }))
+
+      const result = await geminiAI.improveDescription(
+        formData.description,
+        formData.title,
+        formData.contentType || 'story'
+      )
+      
+      if (result.success && result.content) {
+        setAiSuggestions(prev => ({
+          ...prev,
+          enhancedDescription: result.content!.trim()
+        }))
+      } else {
+        setErrorMessage(result.error || 'Failed to enhance description')
+      }
+    } catch (error) {
+      console.error('Description enhancement failed:', error)
+      setErrorMessage('Description enhancement failed. Please try again.')
+    } finally {
+      setAiLoading(prev => ({ ...prev, description: false }))
+    }
+  }
+
+  const generateTitleSuggestions = async () => {
+    if (!formData.description.trim() && !formData.title.trim()) {
+      setErrorMessage('Please add a title or description first')
+      return
+    }
+
+    setAiLoading(prev => ({ ...prev, title: true }))
+    
+    try {
+      const content = formData.description || formData.title
+      const result = await geminiAI.generateTitle(content, formData.contentType || 'story')
+      
+      if (result.success && result.content) {
+        // Parse the numbered list from Gemini
+        const titles = result.content
+          .split('\n')
+          .filter(line => line.match(/^\d+\./))
+          .map(line => line.replace(/^\d+\.\s*/, '').trim())
+          .filter(title => title.length > 0)
+        
+        setAiSuggestions(prev => ({
+          ...prev,
+          titles
+        }))
+      } else {
+        setErrorMessage(result.error || 'Failed to generate title suggestions')
+      }
+    } catch (error) {
+      console.error('Title generation failed:', error)
+      setErrorMessage('Title generation failed. Please try again.')
+    } finally {
+      setAiLoading(prev => ({ ...prev, title: false }))
+    }
+  }
+
+  const applyEnhancedDescription = () => {
+    if (aiSuggestions.enhancedDescription) {
+      setFormData(prev => ({
+        ...prev,
+        description: aiSuggestions.enhancedDescription
+      }))
+      setAiSuggestions(prev => ({
+        ...prev,
+        enhancedDescription: '',
+        originalDescription: ''
+      }))
+    }
+  }
+
+  const revertToOriginalDescription = () => {
+    if (aiSuggestions.originalDescription) {
+      setFormData(prev => ({
+        ...prev,
+        description: aiSuggestions.originalDescription
+      }))
+      setAiSuggestions(prev => ({
+        ...prev,
+        enhancedDescription: '',
+        originalDescription: ''
+      }))
+    }
+  }
+
+  const selectTitle = (title: string) => {
+    setFormData(prev => ({
+      ...prev,
+      title
+    }))
+    setAiSuggestions(prev => ({
+      ...prev,
+      titles: []
+    }))
+  }
+
+  // Test API connection
+  const testGeminiAPI = async () => {
+    setAiLoading(prev => ({ ...prev, grammar: true }))
+    
+    try {
+      const result = await geminiAI.testConnection()
+      
+      if (result.success) {
+        alert(`API Test Successful! Response: ${result.content}`)
+      } else {
+        alert(`API Test Failed: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('API test failed:', error)
+      alert(`API Test Error: ${error}`)
+    } finally {
+      setAiLoading(prev => ({ ...prev, grammar: false }))
+    }
+  }
+
+  // List available models
+  const listModels = async () => {
+    setAiLoading(prev => ({ ...prev, title: true }))
+    
+    try {
+      const result = await geminiAI.listModels()
+      
+      if (result.success) {
+        console.log('Available models:', result.content)
+        alert(`Available models logged to console. Check browser console (F12) for details.`)
+      } else {
+        alert(`Failed to list models: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('List models failed:', error)
+      alert(`List Models Error: ${error}`)
+    } finally {
+      setAiLoading(prev => ({ ...prev, title: false }))
+    }
   }
 
   const validateForm = (): boolean => {
@@ -218,16 +414,62 @@ export default function MintPage() {
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
                 Title *
               </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                placeholder="Enter the title of your literary work"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              />
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  placeholder="Enter the title of your literary work"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => correctGrammar('title')}
+                  disabled={aiLoading.grammar || !formData.title.trim()}
+                  className="px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Fix grammar and spelling"
+                >
+                  {aiLoading.grammar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={generateTitleSuggestions}
+                  disabled={aiLoading.title || (!formData.description.trim() && !formData.title.trim())}
+                  className="px-3 py-2 text-sm font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-md hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Generate title suggestions"
+                >
+                  {aiLoading.title ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                </button>
+              </div>
+              
+              {/* Title Suggestions */}
+              {aiSuggestions.titles.length > 0 && (
+                <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-md">
+                  <h4 className="text-sm font-medium text-purple-800 mb-2">AI Title Suggestions:</h4>
+                  <div className="space-y-1">
+                    {aiSuggestions.titles.map((title, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => selectTitle(title)}
+                        className="block w-full text-left px-2 py-1 text-sm text-purple-700 hover:bg-purple-100 rounded transition-colors"
+                      >
+                        {title}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAiSuggestions(prev => ({ ...prev, titles: [] }))}
+                    className="mt-2 text-xs text-purple-600 hover:text-purple-800"
+                  >
+                    Close suggestions
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Description */}
@@ -235,16 +477,69 @@ export default function MintPage() {
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                 Description *
               </label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                rows={4}
-                placeholder="Describe your literary work, its themes, and what makes it special"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              />
+              <div className="space-y-2">
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows={4}
+                  placeholder="Describe your literary work, its themes, and what makes it special"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  required
+                />
+                
+                {/* AI Enhancement Buttons */}
+                <div className="flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => correctGrammar('description')}
+                    disabled={aiLoading.grammar || !formData.description.trim()}
+                    className="flex items-center space-x-1 px-3 py-1 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {aiLoading.grammar ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                    <span>Fix Grammar</span>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={enhanceDescription}
+                    disabled={aiLoading.description || !formData.description.trim()}
+                    className="flex items-center space-x-1 px-3 py-1 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {aiLoading.description ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                    <span>Enhance with AI</span>
+                  </button>
+                </div>
+              </div>
+              
+              {/* Enhanced Description Preview */}
+              {aiSuggestions.enhancedDescription && (
+                <div className="mt-3 p-4 bg-green-50 border border-green-200 rounded-md">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-green-800">AI Enhanced Description:</h4>
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={applyEnhancedDescription}
+                        className="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700"
+                      >
+                        Use This
+                      </button>
+                      <button
+                        type="button"
+                        onClick={revertToOriginalDescription}
+                        className="px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded hover:bg-green-200"
+                      >
+                        Keep Original
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-green-700 leading-relaxed">
+                    {aiSuggestions.enhancedDescription}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Content Type */}
@@ -374,29 +669,82 @@ export default function MintPage() {
         </div>
 
         {/* Information Section */}
-        <div className="mt-12 bg-blue-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-blue-900 mb-4">How It Works</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">1</span>
+        <div className="mt-12 space-y-8">
+          {/* AI Features Section */}
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-6 border border-purple-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-purple-900 flex items-center">
+                <Sparkles className="h-5 w-5 mr-2 text-purple-600" />
+                AI-Powered Enhancement Features
+              </h3>
+              <div className="flex space-x-2">
+                <button
+                  type="button"
+                  onClick={listModels}
+                  disabled={aiLoading.title}
+                  className="px-3 py-1 text-xs font-medium text-purple-600 bg-purple-100 border border-purple-300 rounded-md hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
+                >
+                  {aiLoading.title ? <Loader2 className="h-3 w-3 animate-spin" /> : 'List Models'}
+                </button>
+                <button
+                  type="button"
+                  onClick={testGeminiAPI}
+                  disabled={aiLoading.grammar}
+                  className="px-3 py-1 text-xs font-medium text-purple-600 bg-purple-100 border border-purple-300 rounded-md hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
+                >
+                  {aiLoading.grammar ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Test API'}
+                </button>
               </div>
-              <h4 className="font-medium text-blue-900">Upload</h4>
-              <p className="text-sm text-blue-700">Your files are stored on IPFS for decentralized access</p>
             </div>
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">2</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                  <Wand2 className="h-6 w-6 text-purple-600" />
+                </div>
+                <h4 className="font-medium text-purple-900">Grammar Correction</h4>
+                <p className="text-sm text-purple-700">Fix spelling and grammar errors while preserving your unique voice</p>
               </div>
-              <h4 className="font-medium text-blue-900">Mint</h4>
-              <p className="text-sm text-blue-700">Your NFT is created on the blockchain with royalties</p>
+              <div className="text-center">
+                <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                  <Sparkles className="h-6 w-6 text-purple-600" />
+                </div>
+                <h4 className="font-medium text-purple-900">Content Enhancement</h4>
+                <p className="text-sm text-purple-700">Improve descriptions to make them more engaging for collectors</p>
+              </div>
+              <div className="text-center">
+                <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                  <RefreshCw className="h-6 w-6 text-purple-600" />
+                </div>
+                <h4 className="font-medium text-purple-900">Title Suggestions</h4>
+                <p className="text-sm text-purple-700">Generate creative titles that capture your work's essence</p>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">3</span>
+          </div>
+
+          <div className="bg-blue-50 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-blue-900 mb-4">How It Works</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                  <span className="text-blue-600 font-bold">1</span>
+                </div>
+                <h4 className="font-medium text-blue-900">Upload</h4>
+                <p className="text-sm text-blue-700">Your files are stored on IPFS for decentralized access</p>
               </div>
-              <h4 className="font-medium text-blue-900">Earn</h4>
-              <p className="text-sm text-blue-700">Receive royalties from all future sales automatically</p>
+              <div className="text-center">
+                <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                  <span className="text-blue-600 font-bold">2</span>
+                </div>
+                <h4 className="font-medium text-blue-900">Mint</h4>
+                <p className="text-sm text-blue-700">Your NFT is created on the blockchain with royalties</p>
+              </div>
+              <div className="text-center">
+                <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                  <span className="text-blue-600 font-bold">3</span>
+                </div>
+                <h4 className="font-medium text-blue-900">Earn</h4>
+                <p className="text-sm text-blue-700">Receive royalties from all future sales automatically</p>
+              </div>
             </div>
           </div>
         </div>

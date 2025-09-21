@@ -15,7 +15,7 @@ const MetaTalesNFT_ABI = [
   'function name() view returns (string)',
   'function symbol() view returns (string)',
   'function totalSupply() view returns (uint256)',
-  'function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)',
+  'function exists(uint256 tokenId) view returns (bool)',
   'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)'
 ]
 
@@ -40,10 +40,20 @@ export interface UserNFT {
   }
 }
 
-// Get contract address for current chain (prioritize Hardhat for development)
+// Get contract address for current chain (prioritize environment variables)
 const getContractAddress = (chainId: number): string => {
+  console.log('Getting contract address for chainId:', chainId)
+  
   if (chainId === hardhat.id) {
-    return contractsConfig.networks.localhost.contracts.MetaTalesNFT.address
+    // Check environment variable first, then fallback to config
+    const envAddress = process.env.NEXT_PUBLIC_HARDHAT_CONTRACT_ADDRESS
+    if (envAddress && envAddress.startsWith('0x') && envAddress.length === 42) {
+      console.log('Using Hardhat contract address from env:', envAddress)
+      return envAddress
+    }
+    const configAddress = contractsConfig.networks.localhost.contracts.MetaTalesNFT.address
+    console.log('Using Hardhat contract address from config:', configAddress)
+    return configAddress
   } else if (chainId === sepolia.id) {
     const address = process.env.NEXT_PUBLIC_SEPOLIA_CONTRACT_ADDRESS || ''
     // Check if it's a valid address (not the placeholder)
@@ -179,44 +189,126 @@ export function useUserNFTs() {
         const provider = new ethers.JsonRpcProvider(rpcUrl)
         const contract = new ethers.Contract(contractAddress, MetaTalesNFT_ABI, provider)
 
-        // Get user's NFT balance
+        // Get user's NFT balance first to check if they have any
         const balance = await contract.balanceOf(address)
         console.log(`📊 User has ${balance.toString()} NFTs`)
 
         if (Number(balance) === 0) {
-          setUserNFTs([])
+          // Show demo data when no NFTs exist
+          const demoNFTs: UserNFT[] = [
+            {
+              id: 'demo-1',
+              title: 'The Enchanted Forest',
+              description: 'A mystical tale of adventure and magic where a young explorer discovers a hidden realm filled with talking animals and ancient secrets.',
+              contentType: 'story',
+              coverImage: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop',
+              tokenId: 'demo-1',
+              isForSale: true,
+              price: '0.1',
+              royaltyPercentage: 5,
+              totalEarnings: '0.025',
+              views: 1247,
+              likes: 89,
+              createdAt: '2025-09-15T10:30:00Z',
+              lastSale: {
+                price: '0.08',
+                date: '2025-09-18T14:22:00Z'
+              }
+            },
+            {
+              id: 'demo-2',
+              title: 'Whispers of Tomorrow',
+              description: 'A thought-provoking poem about hope, dreams, and the endless possibilities that each new day brings to our lives.',
+              contentType: 'poem',
+              coverImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop',
+              tokenId: 'demo-2',
+              isForSale: false,
+              royaltyPercentage: 7.5,
+              totalEarnings: '0.15',
+              views: 892,
+              likes: 156,
+              createdAt: '2025-09-12T16:45:00Z'
+            },
+            {
+              id: 'demo-3',
+              title: 'Chronicles of the Digital Age',
+              description: 'An epic comic series exploring the intersection of technology and humanity in a dystopian future where AI and humans coexist.',
+              contentType: 'comic',
+              coverImage: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop',
+              tokenId: 'demo-3',
+              isForSale: true,
+              price: '0.25',
+              royaltyPercentage: 10,
+              totalEarnings: '0.3',
+              views: 2156,
+              likes: 234,
+              createdAt: '2025-09-08T09:15:00Z',
+              lastSale: {
+                price: '0.2',
+                date: '2025-09-19T11:30:00Z'
+              }
+            },
+            {
+              id: 'demo-4',
+              title: 'Midnight Reflections',
+              description: 'A collection of intimate short stories exploring love, loss, and the quiet moments that define our human experience.',
+              contentType: 'story',
+              coverImage: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=600&fit=crop',
+              tokenId: 'demo-4',
+              isForSale: false,
+              royaltyPercentage: 6,
+              totalEarnings: '0.08',
+              views: 678,
+              likes: 92,
+              createdAt: '2025-09-20T20:12:00Z'
+            }
+          ]
+          setUserNFTs(demoNFTs)
           setLoading(false)
           return
         }
 
-        // Get all token IDs owned by user
+        // Get total supply to know how many tokens exist
+        const totalSupply = await contract.totalSupply()
+        console.log(`📊 Total supply: ${totalSupply.toString()}`)
+
+        // Since we don't have enumeration, we'll check each token ID from 1 to totalSupply
         const nfts: UserNFT[] = []
-        for (let i = 0; i < Number(balance); i++) {
+        
+        for (let tokenId = 1; tokenId <= Number(totalSupply); tokenId++) {
           try {
-            const tokenId = await contract.tokenOfOwnerByIndex(address, i)
-            const tokenURI = await contract.tokenURI(tokenId)
+            // Check if token exists and who owns it
+            const tokenExists = await contract.exists(tokenId)
+            if (!tokenExists) continue
+
+            const owner = await contract.ownerOf(tokenId)
             
-            console.log(`🎨 Processing NFT ${tokenId.toString()}...`)
-            
-            const metadata = await parseMetadata(tokenURI)
-            
-            nfts.push({
-              id: tokenId.toString(),
-              tokenId: tokenId.toString(),
-              title: metadata.title || `NFT #${tokenId.toString()}`,
-              description: metadata.description || 'No description available',
-              contentType: metadata.contentType || 'story',
-              coverImage: metadata.coverImage || '/placeholder-nft.png',
-              isForSale: false, // TODO: Check marketplace contract
-              royaltyPercentage: metadata.royaltyPercentage || 0,
-              totalEarnings: '0', // TODO: Calculate from sales
-              views: 0, // TODO: Track views
-              likes: 0, // TODO: Track likes
-              createdAt: new Date().toISOString(), // TODO: Get from blockchain
-              txHash: undefined // TODO: Get mint transaction
-            })
+            // If this user owns this token, fetch its metadata
+            if (owner.toLowerCase() === address.toLowerCase()) {
+              console.log(`🎨 User owns NFT #${tokenId}, fetching metadata...`)
+              
+              const tokenURI = await contract.tokenURI(tokenId)
+              const metadata = await parseMetadata(tokenURI)
+              
+              nfts.push({
+                id: tokenId.toString(),
+                tokenId: tokenId.toString(),
+                title: metadata.title || `NFT #${tokenId}`,
+                description: metadata.description || 'No description available',
+                contentType: metadata.contentType || 'story',
+                coverImage: metadata.coverImage || '/placeholder-nft.png',
+                isForSale: false, // TODO: Check marketplace contract
+                royaltyPercentage: metadata.royaltyPercentage || 0,
+                totalEarnings: '0', // TODO: Calculate from sales
+                views: 0, // TODO: Track views
+                likes: 0, // TODO: Track likes
+                createdAt: new Date().toISOString(), // TODO: Get from blockchain
+                txHash: undefined // TODO: Get mint transaction
+              })
+            }
           } catch (error) {
-            console.error(`❌ Error processing NFT at index ${i}:`, error)
+            console.error(`❌ Error processing token ID ${tokenId}:`, error)
+            // Continue to next token
           }
         }
 
